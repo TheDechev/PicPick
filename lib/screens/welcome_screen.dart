@@ -36,17 +36,28 @@ class WelcomeScreen extends StatelessWidget {
                     fontWeight: FontWeight.w700),
               ),
             ),
-            FlatButton(
-              onPressed: () {
-                Navigator.pushNamed(context, MainScreen.RouteKey);
-              },
-              child: Container(
-                child: Icon(
+            IconButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, MainScreen.RouteKey);
+                },
+                icon: Icon(
                   Icons.arrow_forward_ios,
                   color: Colors.pink,
-                ),
-              ),
-            )
+                )),
+            TextButton(
+                onPressed: () {},
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.info_outlined),
+                    Text(
+                      'How To',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ))
           ],
         ),
       ),
