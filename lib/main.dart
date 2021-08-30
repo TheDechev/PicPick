@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:picpick/screens/gallery_screen.dart';
 import 'package:picpick/screens/main_screen.dart';
 import 'package:picpick/screens/welcome_screen.dart';
 
@@ -17,7 +18,8 @@ class MyApp extends StatelessWidget {
       initialRoute: WelcomeScreen.RouteKey,
       routes: {
         WelcomeScreen.RouteKey: (context) => WelcomeScreen(),
-        MainScreen.RouteKey: (context) => MainScreen()
+        MainScreen.RouteKey: (context) => MainScreen(),
+        GalleryScreen.RouteKey: (context) => GalleryScreen()
       },
     );
   }

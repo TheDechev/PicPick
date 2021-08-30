@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:picpick/screens/gallery_screen.dart';
 import 'package:picpick/screens/main_screen.dart';
 //import 'package:photo_manager/photo_manager.dart';
 
@@ -45,7 +46,9 @@ class WelcomeScreen extends StatelessWidget {
                   color: Colors.pink,
                 )),
             TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.pushNamed(context, GalleryScreen.RouteKey);
+                },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

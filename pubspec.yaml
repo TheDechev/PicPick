@@ -30,6 +30,8 @@ dependencies:
   positioned_tap_detector: ^1.0.3
   badges: ^1.1.1
   local_image_provider: ^4.0.1
+  photo_gallery: ^1.0.1
+  permission_handler: ^8.1.4+2
 
 dev_dependencies:
   flutter_test:
