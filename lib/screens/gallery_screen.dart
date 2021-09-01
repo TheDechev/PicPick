@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:picpick/bloc/images_bloc.dart';
 import 'package:picpick/data/photo_repository.dart';
 import 'package:picpick/utils/constants.dart';
 
@@ -31,7 +33,8 @@ class _GalleryScreenState extends State<GalleryScreen> {
 
   @override
   void initState() {
-    _getPhotos();
+    final imagesBloc = BlocProvider.of<ImagesBloc>(context);
+    imagesBloc.add(GetImages(NUM_IMAGES_TO_SHOW));
 
     super.initState();
   }
@@ -63,11 +66,18 @@ class _GalleryScreenState extends State<GalleryScreen> {
                   child: Container(
                     height: 300,
                     width: 350,
-                    child: GridView.count(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                      children: _gridChildren,
+                    child: BlocBuilder<ImagesBloc, ImagesState>(
+                      builder: (context, state) {
+                        if (state is ImagesInitial) {
+                          return Text("Initial");
+                        } else if (state is ImagesLoading) {
+                          return Text("Loading");
+                        } else if (state is ImagesLoaded) {
+                          return Text("ImagesLoaded");
+                        } else {
+                          return Text("ERROR");
+                        }
+                      },
                     ),
                   ),
                 ),

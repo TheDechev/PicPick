@@ -32,6 +32,8 @@ dependencies:
   local_image_provider: ^4.0.1
   photo_gallery: ^1.0.1
   permission_handler: ^8.1.4+2
+  flutter_bloc: ^7.2.0
+  equatable: ^2.0.3
 
 dev_dependencies:
   flutter_test:
