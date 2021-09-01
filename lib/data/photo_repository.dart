@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_gallery/photo_gallery.dart';
 
@@ -23,24 +24,33 @@ class PhotoGalleryRepository implements PhotoRepository {
   static List<Album> _albums;
   static bool isFirstLoad = true;
 
-  Future<List<File>> _imagesMediumListToFileList(
-      List<Medium> imagesMedia) async {
-    print("in _imagesMediumListToFileList");
+  Future<List<File>> _imagesPageToFileList(MediaPage imagesPage) async {
+    print("in _imagesPageToFileList");
 
-    if (imagesMedia.isEmpty) {
-      print("imagesMedia is empty for some reason, throwing exception");
-      throw Exception("imagesMedia is empty for some reason");
+    if (imagesPage.total == 0) {
+      throw Exception("imagesPage is empty for some reason");
     }
 
+    print("imagesPage total amount is: ${imagesPage.total}");
     List<File> imagesFileList = [];
-    for (var i = 0; i < imagesMedia.length; i++) {
-      File imageFile = await imagesMedia[i].getFile();
-      if (imageFile == null) {
-        print("for some reason imageFile for i=$i is null");
-        continue;
+    List<Medium> imagesMedium = imagesPage.items;
+    bool isFirstPage = true;
+    do {
+      if (!isFirstPage) {
+        imagesPage = await imagesPage.nextPage();
       }
-      imagesFileList.add(imageFile);
-    }
+
+      isFirstPage = false;
+
+      for (var i = 0; i < imagesMedium.length; i++) {
+        File imageFile = await imagesMedium[i].getFile();
+        if (imageFile == null) {
+          print("for some reason imageFile for i=$i is null");
+          continue;
+        }
+        imagesFileList.add(imageFile);
+      }
+    } while (!imagesPage.isLast);
 
     if (imagesFileList.isEmpty) {
       print("imagesFileList is empty for some reason, throwing exception");
@@ -52,7 +62,9 @@ class PhotoGalleryRepository implements PhotoRepository {
 
   @override
   Future<List<File>> fetchPhotoImages(int numImages) async {
-    await Permission.storage.request();
+    if (!await Permission.storage.isGranted) {
+      await Permission.storage.request();
+    }
 
     if (isFirstLoad) {
       _albums = await PhotoGallery.listAlbums(mediumType: MediumType.image);
@@ -64,12 +76,9 @@ class PhotoGalleryRepository implements PhotoRepository {
     List<File> imagesFile = [];
 
     for (var i = 0; i < _albums.length; i++) {
-      print("getting mediaPage for album 0");
-      //TODO: need to check all the pages in an album
-      //TODO: need to check the next album if all the pages are done
-      List<Medium> imagesMedia = (await _albums[i].listMedia()).items;
-      imagesFile = imagesFile + await _imagesMediumListToFileList(imagesMedia);
-      //TODO: need to actually make sure we fetch ONLY the amount required using the photo gallery package
+      print("getting mediaPage for album i=$i");
+      MediaPage imagesPage = (await _albums[i].listMedia());
+      imagesFile = imagesFile + await _imagesPageToFileList(imagesPage);
       if (imagesFile.length >= numImages) {
         print("got desired number of image files=$numImages");
         break;
@@ -77,10 +86,11 @@ class PhotoGalleryRepository implements PhotoRepository {
     }
 
     if (imagesFile.length < numImages) {
-      throw Exception(
-          "number of images retreived is less than the number required: $numImages");
+      print(
+          "requested numImages is lower than the actual number of images, returning actual number");
+      numImages = imagesFile.length;
     }
 
-    return imagesFile;
+    return imagesFile.sublist(0, numImages);
   }
 }

@@ -9,8 +9,6 @@ import 'package:picpick/utils/constants.dart';
 import 'package:positioned_tap_detector/positioned_tap_detector.dart';
 import 'package:local_image_provider/local_image_provider.dart' as lip;
 
-const dummyImage = 'images/profile.jpeg';
-
 class MainScreen extends StatefulWidget {
   static const RouteKey = '/main_screen';
 
@@ -104,12 +102,12 @@ class _MainScreenState extends State<MainScreen> {
   Widget _getCurrentImage() {
     return _loadedImages == null
         ? Image.asset(
-            dummyImage,
+            kDummyImageAsset,
             fit: BoxFit.contain,
           )
         : _loadedImages.isEmpty
             ? Image.asset(
-                dummyImage,
+                kDummyImageAsset,
                 fit: BoxFit.contain,
               )
             : Image(
