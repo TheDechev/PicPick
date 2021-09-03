@@ -73,7 +73,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
                         } else if (state is ImagesLoading) {
                           return Text("Loading");
                         } else if (state is ImagesLoaded) {
-                          return Text("ImagesLoaded");
+                          return _buildImagesUponLoad(state);
                         } else {
                           return Text("ERROR");
                         }
@@ -120,24 +120,28 @@ class _GalleryScreenState extends State<GalleryScreen> {
         ));
   }
 
-  Future<void> _getPhotos() async {
-    List<File> imageFiles =
-        await photoRepo.fetchPhotoImages(NUM_IMAGES_TO_SHOW);
-    print("fetched a total of ${imageFiles.length} images");
+  Widget _buildImagesUponLoad(ImagesLoaded event) {
+    print("fetched a total of ${event.imageFiles.length} images");
+
     List<Widget> widgets = [];
-    for (var i = 0; i < imageFiles.length; i++) {
+    for (var i = 0; i < NUM_IMAGES_TO_SHOW; i++) {
       print("adding widget i=$i");
       widgets.add(ImageBox(
-        file: imageFiles[i],
+        file: (i < event.imageFiles.length) ? event.imageFiles[i] : null,
         onPress: () {
           print("image pressed");
         },
       ));
     }
 
-    setState(() {
-      _gridChildren = widgets;
-    });
+    return Column(
+      children: [
+        widgets[0],
+        widgets[1],
+        widgets[2],
+        widgets[3],
+      ],
+    );
   }
 }
 

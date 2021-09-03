@@ -45,7 +45,7 @@ class WelcomeScreen extends StatelessWidget {
               ),
               IconButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, MainScreen.RouteKey);
+                    Navigator.pushNamed(context, GalleryScreen.RouteKey);
                   },
                   icon: Icon(
                     Icons.arrow_forward_ios,
@@ -53,7 +53,7 @@ class WelcomeScreen extends StatelessWidget {
                   )),
               TextButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, GalleryScreen.RouteKey);
+                    Navigator.pushNamed(context, MainScreen.RouteKey);
                   },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,

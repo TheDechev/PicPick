@@ -8,6 +8,7 @@ import 'package:picpick/screens/welcome_screen.dart';
 import 'bloc/images_bloc.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
 }
 
