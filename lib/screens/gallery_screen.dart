@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:picpick/bloc/images_bloc.dart';
 import 'package:picpick/data/photo_repository.dart';
 import 'package:picpick/utils/constants.dart';
+import 'package:picpick/widgets/image_box.dart';
 
 const int NUM_IMAGES_TO_SHOW = 4;
 
@@ -72,10 +73,38 @@ class _GalleryScreenState extends State<GalleryScreen> {
                         } else if (state is ImagesLoading) {
                           return Text("Loading");
                         } else if (state is ImagesLoaded) {
-                          return Column(
-                              children: _buildImagesUponLoad(state)
+                          List<Widget> images = _buildImagesUponLoad(state);
+                          return Row(
+                            children: [
+                              Expanded(
+                                child: ListView.builder(
+                                  physics: NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
+                                  itemCount: images.length ~/ 2,
+                                  itemBuilder: (context, index) {
+                                    print("index=$index");
+                                    return images[index];
+                                  },
+                                ),
+                              ),
+                              Expanded(
+                                child: ListView.builder(
+                                  physics: NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
+                                  itemCount: images.length ~/ 2,
+                                  itemBuilder: (context, index) {
+                                    index = images.length ~/ 2 + index;
+                                    print("index=$index");
+                                    return images[index];
+                                  },
+                                ),
+                              ),
+                            ],
+                          );
+/*                          return Column(
+                              children:
                                   .map((e) => Flexible(child: e))
-                                  .toList());
+                                  .toList());*/
                         } else {
                           return Text("ERROR");
                         }
@@ -132,48 +161,15 @@ List<Widget> _buildImagesUponLoad(ImagesLoaded event) {
     widgets.add(
       Padding(
         padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-        child: Stack(
-          children: [
-            ImageBox(
-              file: (i < event.imageFiles.length) ? event.imageFiles[i] : null,
-              onPress: () {
-                print("image pressed");
-              },
-            ),
-            Container(
-              color: Colors.pink[200].withOpacity(0.5),
-            ),
-          ],
+        child: ImageBox(
+          file: (i < event.imageFiles.length) ? event.imageFiles[i] : null,
+          onPress: () {
+            print("image pressed");
+          },
         ),
       ),
     );
   }
 
   return widgets;
-}
-
-class ImageBox extends StatelessWidget {
-  final File file;
-  final Function onPress;
-
-  ImageBox({@required this.file, @required this.onPress});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onPress,
-      child: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image:
-                (file == null) ? AssetImage(kDummyImageAsset) : FileImage(file),
-            fit: BoxFit.cover,
-          ),
-          borderRadius: BorderRadius.all(
-            Radius.circular(10),
-          ),
-        ),
-      ),
-    );
-  }
 }
