@@ -47,6 +47,9 @@ class _GalleryScreenState extends State<GalleryScreen> {
           title: Text('Gallery'),
           centerTitle: true,
           elevation: 10,
+          actions: [
+            IconButton(onPressed: () {}, icon: Icon(Icons.clear_all)),
+          ],
         ),
         backgroundColor: Colors.white,
         body: Column(
