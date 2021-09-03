@@ -64,8 +64,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 ),
                 Expanded(
                   child: Container(
-                    height: 300,
-                    width: 350,
+                    height: MediaQuery.of(context).size.height * 0.8,
                     child: BlocBuilder<ImagesBloc, ImagesState>(
                       builder: (context, state) {
                         if (state is ImagesInitial) {
@@ -73,12 +72,10 @@ class _GalleryScreenState extends State<GalleryScreen> {
                         } else if (state is ImagesLoading) {
                           return Text("Loading");
                         } else if (state is ImagesLoaded) {
-                          var widgets = _buildImagesUponLoad(state);
-                          return GridView.count(
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 10,
-                            children: widgets,
-                          );
+                          return Column(
+                              children: _buildImagesUponLoad(state)
+                                  .map((e) => Flexible(child: e))
+                                  .toList());
                         } else {
                           return Text("ERROR");
                         }
@@ -124,32 +121,28 @@ class _GalleryScreenState extends State<GalleryScreen> {
           ],
         ));
   }
+}
 
-  List<Widget> _buildImagesUponLoad(ImagesLoaded event) {
-    print("fetched a total of ${event.imageFiles.length} images");
+List<Widget> _buildImagesUponLoad(ImagesLoaded event) {
+  print("fetched a total of ${event.imageFiles.length} images");
 
-    List<Widget> widgets = [];
-    for (var i = 0; i < NUM_IMAGES_TO_SHOW; i++) {
-      print("adding widget i=$i");
-      widgets.add(ImageBox(
-        file: (i < event.imageFiles.length) ? event.imageFiles[i] : null,
-        onPress: () {
-          print("image pressed");
-        },
-      ));
-    }
-
-    return widgets;
-
-    // return new Column(
-    //   children: [
-    //     widgets[0],
-    //     widgets[1],
-    //     widgets[2],
-    //     widgets[3],
-    //   ],
-    // );
+  List<Widget> widgets = [];
+  for (var i = 0; i < NUM_IMAGES_TO_SHOW; i++) {
+    print("adding widget i=$i");
+    widgets.add(
+      Padding(
+        padding: const EdgeInsets.fromLTRB(0, 0, 0, 8),
+        child: ImageBox(
+          file: (i < event.imageFiles.length) ? event.imageFiles[i] : null,
+          onPress: () {
+            print("image pressed");
+          },
+        ),
+      ),
+    );
   }
+
+  return widgets;
 }
 
 class ImageBox extends StatelessWidget {
