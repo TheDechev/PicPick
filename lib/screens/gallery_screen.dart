@@ -73,34 +73,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
                         } else if (state is ImagesLoading) {
                           return Text("Loading");
                         } else if (state is ImagesLoaded) {
-                          List<Widget> images = _buildImagesUponLoad(state);
-                          return Row(
-                            children: [
-                              Expanded(
-                                child: ListView.builder(
-                                  physics: NeverScrollableScrollPhysics(),
-                                  shrinkWrap: true,
-                                  itemCount: images.length ~/ 2,
-                                  itemBuilder: (context, index) {
-                                    print("index=$index");
-                                    return images[index];
-                                  },
-                                ),
-                              ),
-                              Expanded(
-                                child: ListView.builder(
-                                  physics: NeverScrollableScrollPhysics(),
-                                  shrinkWrap: true,
-                                  itemCount: images.length ~/ 2,
-                                  itemBuilder: (context, index) {
-                                    index = images.length ~/ 2 + index;
-                                    print("index=$index");
-                                    return images[index];
-                                  },
-                                ),
-                              ),
-                            ],
-                          );
+                          return _buildImagesUponLoad(state);
 /*                          return Column(
                               children:
                                   .map((e) => Flexible(child: e))
@@ -152,10 +125,9 @@ class _GalleryScreenState extends State<GalleryScreen> {
   }
 }
 
-List<Widget> _buildImagesUponLoad(ImagesLoaded event) {
-  print("fetched a total of ${event.imageFiles.length} images");
-
+List<Widget> _convertImageFilesToWidgetList(ImagesLoaded event) {
   List<Widget> widgets = [];
+
   for (var i = 0; i < NUM_IMAGES_TO_SHOW; i++) {
     print("adding widget i=$i");
     widgets.add(
@@ -172,4 +144,38 @@ List<Widget> _buildImagesUponLoad(ImagesLoaded event) {
   }
 
   return widgets;
+}
+
+Widget _buildImagesUponLoad(ImagesLoaded event) {
+  print("fetched a total of ${event.imageFiles.length} images");
+
+  List<Widget> widgets = _convertImageFilesToWidgetList(event);
+
+  return Row(
+    children: [
+      Expanded(
+        child: ListView.builder(
+          physics: NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          itemCount: widgets.length ~/ 2,
+          itemBuilder: (context, index) {
+            print("index=$index");
+            return widgets[index];
+          },
+        ),
+      ),
+      Expanded(
+        child: ListView.builder(
+          physics: NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          itemCount: widgets.length ~/ 2,
+          itemBuilder: (context, index) {
+            index = widgets.length ~/ 2 + index;
+            print("index=$index");
+            return widgets[index];
+          },
+        ),
+      ),
+    ],
+  );
 }
