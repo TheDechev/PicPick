@@ -73,7 +73,12 @@ class _GalleryScreenState extends State<GalleryScreen> {
                         } else if (state is ImagesLoading) {
                           return Text("Loading");
                         } else if (state is ImagesLoaded) {
-                          return _buildImagesUponLoad(state);
+                          var widgets = _buildImagesUponLoad(state);
+                          return GridView.count(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 10,
+                            children: widgets,
+                          );
                         } else {
                           return Text("ERROR");
                         }
@@ -120,7 +125,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
         ));
   }
 
-  Widget _buildImagesUponLoad(ImagesLoaded event) {
+  List<Widget> _buildImagesUponLoad(ImagesLoaded event) {
     print("fetched a total of ${event.imageFiles.length} images");
 
     List<Widget> widgets = [];
@@ -134,14 +139,16 @@ class _GalleryScreenState extends State<GalleryScreen> {
       ));
     }
 
-    return Column(
-      children: [
-        widgets[0],
-        widgets[1],
-        widgets[2],
-        widgets[3],
-      ],
-    );
+    return widgets;
+
+    // return new Column(
+    //   children: [
+    //     widgets[0],
+    //     widgets[1],
+    //     widgets[2],
+    //     widgets[3],
+    //   ],
+    // );
   }
 }
 
