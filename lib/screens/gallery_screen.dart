@@ -131,12 +131,19 @@ List<Widget> _buildImagesUponLoad(ImagesLoaded event) {
     print("adding widget i=$i");
     widgets.add(
       Padding(
-        padding: const EdgeInsets.fromLTRB(0, 0, 0, 8),
-        child: ImageBox(
-          file: (i < event.imageFiles.length) ? event.imageFiles[i] : null,
-          onPress: () {
-            print("image pressed");
-          },
+        padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+        child: Stack(
+          children: [
+            ImageBox(
+              file: (i < event.imageFiles.length) ? event.imageFiles[i] : null,
+              onPress: () {
+                print("image pressed");
+              },
+            ),
+            Container(
+              color: Colors.pink[200].withOpacity(0.5),
+            ),
+          ],
         ),
       ),
     );
@@ -162,7 +169,6 @@ class ImageBox extends StatelessWidget {
                 (file == null) ? AssetImage(kDummyImageAsset) : FileImage(file),
             fit: BoxFit.cover,
           ),
-          color: Colors.yellow,
           borderRadius: BorderRadius.all(
             Radius.circular(10),
           ),
