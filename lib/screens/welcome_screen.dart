@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:picpick/bloc/images_bloc.dart';
+import 'package:picpick/bloc/counter_bloc/counter_bloc.dart';
+import 'package:picpick/bloc/images_bloc/images_bloc.dart';
 import 'package:picpick/data/photo_repository.dart';
 import 'package:picpick/screens/gallery_screen.dart';
 import 'package:picpick/screens/main_screen.dart';
@@ -26,49 +27,46 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ImagesBloc(PhotoGalleryRepository()),
-      child: Scaffold(
-        body: SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'Welcome to PicPick!',
-                  style: TextStyle(
-                      fontSize: 60,
-                      color: Colors.pinkAccent,
-                      fontWeight: FontWeight.w700),
-                ),
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                'Welcome to PicPick!',
+                style: TextStyle(
+                    fontSize: 60,
+                    color: Colors.pinkAccent,
+                    fontWeight: FontWeight.w700),
               ),
-              IconButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, GalleryScreen.RouteKey);
-                  },
-                  icon: Icon(
-                    Icons.arrow_forward_ios,
-                    color: Colors.pink,
-                  )),
-              TextButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, MainScreen.RouteKey);
-                  },
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.info_outlined),
-                      Text(
-                        'How To',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                        ),
+            ),
+            IconButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, GalleryScreen.RouteKey);
+                },
+                icon: Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.pink,
+                )),
+            TextButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, MainScreen.RouteKey);
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.info_outlined),
+                    Text(
+                      'How To',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
                       ),
-                    ],
-                  ))
-            ],
-          ),
+                    ),
+                  ],
+                ))
+          ],
         ),
       ),
     );

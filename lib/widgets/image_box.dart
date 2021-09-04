@@ -16,6 +16,8 @@ class ImageBox extends StatefulWidget {
 class _ImageBoxState extends State<ImageBox> {
   bool _selected = false;
 
+  bool get selected => _selected;
+
   set selected(bool value) {
     setState(() {
       _selected = value;
@@ -29,7 +31,7 @@ class _ImageBoxState extends State<ImageBox> {
         setState(() {
           _selected = !_selected;
         });
-        widget.onPress();
+        widget.onPress(_selected);
       },
       child: Stack(
         children: [

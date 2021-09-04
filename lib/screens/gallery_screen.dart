@@ -1,9 +1,8 @@
-import 'dart:io';
-
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:picpick/bloc/images_bloc.dart';
+import 'package:picpick/bloc/counter_bloc/counter_bloc.dart';
+import 'package:picpick/bloc/images_bloc/images_bloc.dart';
 import 'package:picpick/data/photo_repository.dart';
 import 'package:picpick/utils/constants.dart';
 import 'package:picpick/widgets/image_box.dart';
@@ -19,18 +18,6 @@ class GalleryScreen extends StatefulWidget {
 
 class _GalleryScreenState extends State<GalleryScreen> {
   final PhotoRepository photoRepo = PhotoGalleryRepository();
-  int _numItemsToDelete = 0;
-
-  List<Widget> _gridChildren = [
-    Container(
-        decoration: BoxDecoration(color: Colors.blue), child: Text("test")),
-    Container(
-        decoration: BoxDecoration(color: Colors.yellow), child: Text("test2")),
-    Container(
-        decoration: BoxDecoration(color: Colors.orange), child: Text("test3")),
-    Container(
-        decoration: BoxDecoration(color: Colors.red), child: Text("test4"))
-  ];
 
   @override
   void initState() {
@@ -76,7 +63,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
                         } else if (state is ImagesLoading) {
                           return Text("Loading");
                         } else if (state is ImagesLoaded) {
-                          return _buildImagesUponLoad(state);
+                          return _buildImagesUponLoad(context, state);
 /*                          return Column(
                               children:
                                   .map((e) => Flexible(child: e))
@@ -103,32 +90,41 @@ class _GalleryScreenState extends State<GalleryScreen> {
               iconSize: 35,
               onPressed: () {
                 print('trash pressed - emptying');
-                setState(() {
-                  _numItemsToDelete = 0;
-                });
+                final counterBloc = BlocProvider.of<CounterBloc>(context);
+                counterBloc.add(CounterEvent.reset);
               },
-              icon: Badge(
-                showBadge: _numItemsToDelete > 0 ? true : false,
-                badgeColor: kBadgeColor,
-                animationType: BadgeAnimationType.slide,
-                badgeContent: Text(
-                  '$_numItemsToDelete',
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),
-                ),
-                child: Icon(
-                  Icons.delete,
-                  color: Colors.pinkAccent,
-                ),
-              ),
+              icon: BlocBuilder<CounterBloc, int>(builder: (context, state) {
+                if (state > 0) {
+                  return Badge(
+                    showBadge: true,
+                    badgeColor: kBadgeColor,
+                    animationType: BadgeAnimationType.slide,
+                    badgeContent: Text(
+                      '$state',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.delete,
+                      color: Colors.pinkAccent,
+                    ),
+                  );
+                } else {
+                  return Icon(
+                    Icons.delete,
+                    color: Colors.pinkAccent,
+                  );
+                }
+              }),
             ),
           ],
         ));
   }
 }
 
-List<Widget> _convertImageFilesToWidgetList(ImagesLoaded event) {
+List<Widget> _convertImageFilesToWidgetList(
+    BuildContext context, ImagesLoaded event) {
   List<Widget> widgets = [];
 
   for (var i = 0; i < NUM_IMAGES_TO_SHOW; i++) {
@@ -138,8 +134,15 @@ List<Widget> _convertImageFilesToWidgetList(ImagesLoaded event) {
         padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
         child: ImageBox(
           file: (i < event.imageFiles.length) ? event.imageFiles[i] : null,
-          onPress: () {
-            print("image pressed");
+          onPress: (selected) {
+            final counterBloc = BlocProvider.of<CounterBloc>(context);
+            if (selected) {
+              counterBloc.add(CounterEvent.increment);
+              print("image selected");
+            } else {
+              print("image unselected");
+              counterBloc.add(CounterEvent.decrement);
+            }
           },
         ),
       ),
@@ -149,10 +152,10 @@ List<Widget> _convertImageFilesToWidgetList(ImagesLoaded event) {
   return widgets;
 }
 
-Widget _buildImagesUponLoad(ImagesLoaded event) {
+Widget _buildImagesUponLoad(BuildContext context, ImagesLoaded event) {
   print("fetched a total of ${event.imageFiles.length} images");
 
-  List<Widget> widgets = _convertImageFilesToWidgetList(event);
+  List<Widget> widgets = _convertImageFilesToWidgetList(context, event);
 
   return Row(
     children: [

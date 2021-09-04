@@ -5,7 +5,8 @@ import 'package:picpick/screens/gallery_screen.dart';
 import 'package:picpick/screens/main_screen.dart';
 import 'package:picpick/screens/welcome_screen.dart';
 
-import 'bloc/images_bloc.dart';
+import 'bloc/counter_bloc/counter_bloc.dart';
+import 'bloc/images_bloc/images_bloc.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,8 +16,17 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<ImagesBloc>(
-      create: (context) => ImagesBloc(PhotoGalleryRepository()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<ImagesBloc>(
+          create: (context) => ImagesBloc(
+            PhotoGalleryRepository(),
+          ),
+        ),
+        BlocProvider<CounterBloc>(
+          create: (context) => CounterBloc(),
+        ),
+      ],
       child: MaterialApp(
         theme: ThemeData(
           primarySwatch: Colors.pink,
