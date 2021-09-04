@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,14 +19,25 @@ class GalleryScreen extends StatefulWidget {
 }
 
 class _GalleryScreenState extends State<GalleryScreen> {
-  final PhotoRepository photoRepo = PhotoGalleryRepository();
+  Set _selectedItems = Set();
+  CounterBloc _counterBloc;
+  ImagesBloc _imagesBloc;
 
   @override
   void initState() {
-    final imagesBloc = BlocProvider.of<ImagesBloc>(context);
-    imagesBloc.add(GetImages(NUM_IMAGES_TO_SHOW));
+    _imagesBloc = BlocProvider.of<ImagesBloc>(context);
+    _counterBloc = BlocProvider.of<CounterBloc>(context);
+
+    _imagesBloc.add(GetImages(NUM_IMAGES_TO_SHOW));
 
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _counterBloc.add(CounterEvent.reset);
+
+    super.dispose();
   }
 
   @override
@@ -47,8 +60,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 IconButton(
                   onPressed: () {
                     print("back button pressed");
-                    final imagesBloc = BlocProvider.of<ImagesBloc>(context);
-                    imagesBloc.add(PreviousImages());
+                    _imagesBloc.add(PreviousImages());
                   },
                   icon: Icon(
                     Icons.arrow_back_ios,
@@ -80,8 +92,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 IconButton(
                   onPressed: () {
                     print("forward button pressed");
-                    final imagesBloc = BlocProvider.of<ImagesBloc>(context);
-                    imagesBloc.add(NextImages());
+                    _imagesBloc.add(NextImages());
                   },
                   icon: Icon(
                     Icons.arrow_forward_ios,
@@ -125,68 +136,83 @@ class _GalleryScreenState extends State<GalleryScreen> {
           ],
         ));
   }
-}
 
-List<Widget> _convertImageFilesToWidgetList(
-    BuildContext context, ImagesLoaded event) {
-  List<Widget> widgets = [];
-
-  for (var i = 0; i < NUM_IMAGES_TO_SHOW; i++) {
-    print("adding widget i=$i");
-    widgets.add(
-      Padding(
-        padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-        child: ImageBox(
-          selected: false,
-          file: (i < event.imageFiles.length) ? event.imageFiles[i] : null,
-          onPress: (selected) {
-            final counterBloc = BlocProvider.of<CounterBloc>(context);
-            if (selected) {
-              counterBloc.add(CounterEvent.increment);
-              print("image selected");
-            } else {
-              print("image unselected");
-              counterBloc.add(CounterEvent.decrement);
-            }
-          },
-        ),
-      ),
-    );
+  bool isImageSelected(int index, ImagesLoaded event) {
+    bool isSelected = _selectedItems.contains(event.imageFiles[index].hashCode);
+    print("image is selected: $isSelected");
+    return isSelected;
   }
 
-  return widgets;
-}
+  List<Widget> _convertImageFilesToWidgetList(
+      BuildContext context, ImagesLoaded event) {
+    List<Widget> widgets = [];
 
-Widget _buildImagesUponLoad(BuildContext context, ImagesLoaded event) {
-  print("fetched a total of ${event.imageFiles.length} images");
-
-  List<Widget> widgets = _convertImageFilesToWidgetList(context, event);
-
-  return Row(
-    children: [
-      Expanded(
-        child: ListView.builder(
-          physics: NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
-          itemCount: widgets.length ~/ 2,
-          itemBuilder: (context, index) {
-            print("index=$index");
-            return widgets[index];
-          },
+    for (var i = 0; i < NUM_IMAGES_TO_SHOW; i++) {
+      bool isIndexInRange = i < event.imageFiles.length;
+      print("adding widget i=$i");
+      widgets.add(
+        Padding(
+          key: isIndexInRange ? ValueKey(event.imageFiles[i].hashCode) : null,
+          padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+          child: isIndexInRange
+              ? ImageBox(
+                  selected: isImageSelected(i, event),
+                  file: event.imageFiles[i],
+                  onPress: (selected) {
+                    final counterBloc = BlocProvider.of<CounterBloc>(context);
+                    if (selected) {
+                      counterBloc.add(CounterEvent.increment);
+                      print("image selected");
+                      _selectedItems.add(event.imageFiles[i].hashCode);
+                    } else {
+                      print("image unselected");
+                      counterBloc.add(CounterEvent.decrement);
+                      _selectedItems.remove(event.imageFiles[i].hashCode);
+                    }
+                  },
+                )
+              : ImageBox(
+                  file: null,
+                  onPress: null,
+                ),
         ),
-      ),
-      Expanded(
-        child: ListView.builder(
-          physics: NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
-          itemCount: widgets.length ~/ 2,
-          itemBuilder: (context, index) {
-            index = widgets.length ~/ 2 + index;
-            print("index=$index");
-            return widgets[index];
-          },
+      );
+    }
+
+    return widgets;
+  }
+
+  Widget _buildImagesUponLoad(BuildContext context, ImagesLoaded event) {
+    print("fetched a total of ${event.imageFiles.length} images");
+
+    List<Widget> widgets = _convertImageFilesToWidgetList(context, event);
+
+    return Row(
+      children: [
+        Expanded(
+          child: ListView.builder(
+            physics: NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: widgets.length ~/ 2,
+            itemBuilder: (context, index) {
+              print("index=$index");
+              return widgets[index];
+            },
+          ),
         ),
-      ),
-    ],
-  );
+        Expanded(
+          child: ListView.builder(
+            physics: NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: widgets.length ~/ 2,
+            itemBuilder: (context, index) {
+              index = widgets.length ~/ 2 + index;
+              print("index=$index");
+              return widgets[index];
+            },
+          ),
+        ),
+      ],
+    );
+  }
 }

@@ -69,6 +69,7 @@ class PhotoGalleryRepository implements PhotoRepository {
     } else {
       print("images already loaded (cached), resetting indices");
       _lastStartFilesIndex = _lastEndFilesIndex = _lastAlbumIndex = 0;
+      _imageFiles.clear();
     }
 
     for (_lastAlbumIndex = 0;
