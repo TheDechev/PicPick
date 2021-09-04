@@ -6,10 +6,14 @@ import 'package:picpick/utils/constants.dart';
 class ImageBox extends StatefulWidget {
   final File file;
   final Function onPress;
+  final Function onLongPress;
   final bool selected;
 
   ImageBox(
-      {@required this.file, @required this.onPress, this.selected = false});
+      {@required this.file,
+      @required this.onPress,
+      this.selected = false,
+      this.onLongPress});
 
   @override
   _ImageBoxState createState() => _ImageBoxState(selected);
@@ -25,6 +29,7 @@ class _ImageBoxState extends State<ImageBox> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      onLongPress: widget.onLongPress,
       onTap: () {
         setState(() {
           _selected = !_selected;

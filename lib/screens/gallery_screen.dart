@@ -5,9 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:picpick/bloc/counter_bloc/counter_bloc.dart';
 import 'package:picpick/bloc/images_bloc/images_bloc.dart';
+import 'package:picpick/data/models/ImageArgs.dart';
 import 'package:picpick/data/photo_repository.dart';
 import 'package:picpick/utils/constants.dart';
 import 'package:picpick/widgets/image_box.dart';
+
+import 'image_screen.dart';
 
 const int NUM_IMAGES_TO_SHOW = 4;
 
@@ -151,30 +154,42 @@ class _GalleryScreenState extends State<GalleryScreen> {
       bool isIndexInRange = i < event.imageFiles.length;
       print("adding widget i=$i");
       widgets.add(
-        Padding(
+        Hero(
           key: isIndexInRange ? ValueKey(event.imageFiles[i].hashCode) : null,
-          padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-          child: isIndexInRange
-              ? ImageBox(
-                  selected: isImageSelected(i, event),
-                  file: event.imageFiles[i],
-                  onPress: (selected) {
-                    final counterBloc = BlocProvider.of<CounterBloc>(context);
-                    if (selected) {
-                      counterBloc.add(CounterEvent.increment);
-                      print("image selected");
-                      _selectedItems.add(event.imageFiles[i].hashCode);
-                    } else {
-                      print("image unselected");
-                      counterBloc.add(CounterEvent.decrement);
-                      _selectedItems.remove(event.imageFiles[i].hashCode);
-                    }
-                  },
-                )
-              : ImageBox(
-                  file: null,
-                  onPress: null,
-                ),
+          tag: isIndexInRange
+              ? kImageHeroTag + event.imageFiles[i].hashCode.toString()
+              : kImageHeroTag,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+            child: isIndexInRange
+                ? ImageBox(
+                    selected: isImageSelected(i, event),
+                    file: event.imageFiles[i],
+                    onLongPress: () {
+                      Navigator.pushNamed(context, ImageScreen.RouteKey,
+                          arguments: ImageArgs(
+                              imageFile: event.imageFiles[i],
+                              heroTag: kImageHeroTag +
+                                  event.imageFiles[i].hashCode.toString()));
+                    },
+                    onPress: (selected) {
+                      final counterBloc = BlocProvider.of<CounterBloc>(context);
+                      if (selected) {
+                        counterBloc.add(CounterEvent.increment);
+                        print("image selected");
+                        _selectedItems.add(event.imageFiles[i].hashCode);
+                      } else {
+                        print("image unselected");
+                        counterBloc.add(CounterEvent.decrement);
+                        _selectedItems.remove(event.imageFiles[i].hashCode);
+                      }
+                    },
+                  )
+                : ImageBox(
+                    file: null,
+                    onPress: null,
+                  ),
+          ),
         ),
       );
     }
