@@ -110,6 +110,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 print('trash pressed - emptying');
                 _counterBloc.add(CounterEvent.reset);
                 _selectedItems.clear();
+                _imagesBloc.add(ReloadImages(NUM_IMAGES_TO_SHOW));
               },
               icon: BlocBuilder<CounterBloc, int>(builder: (context, state) {
                 if (state > 0) {

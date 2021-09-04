@@ -98,8 +98,10 @@ class PhotoGalleryRepository implements PhotoRepository {
 
   @override
   void reset() {
-    _numImages = 0;
     _albums.clear();
+    _imageFiles.clear();
+    _numImages =
+        _lastStartFilesIndex = _lastEndFilesIndex = _lastAlbumIndex = 0;
   }
 
   bool _enoughImageFiles() {
