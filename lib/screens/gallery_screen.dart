@@ -47,6 +47,8 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 IconButton(
                   onPressed: () {
                     print("back button pressed");
+                    final imagesBloc = BlocProvider.of<ImagesBloc>(context);
+                    imagesBloc.add(PreviousImages());
                   },
                   icon: Icon(
                     Icons.arrow_back_ios,

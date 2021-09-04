@@ -6,7 +6,8 @@ import 'package:photo_gallery/photo_gallery.dart';
 
 abstract class PhotoRepository {
   Future<List<File>> fetchInitialPhotoImages(int numImages);
-  Future<List<File>> fetchNextPhotoImages();
+  Future<List<File>> getNextPhotoImages();
+  List<File> getPreviousPhotoImages();
   void reset();
 }
 
@@ -23,7 +24,10 @@ abstract class PhotoRepository {
 * */
 
 class PhotoGalleryRepository implements PhotoRepository {
-  int _numImages = 0, _lastAlbumIndex = 0, _lastUsedFileIndex = 0;
+  int _numImages = 0,
+      _lastAlbumIndex = 0,
+      _lastStartFilesIndex = 0,
+      _lastEndFilesIndex = 0;
   List<Album> _albums = [];
   List<File> _imageFiles = [];
 
@@ -95,9 +99,10 @@ class PhotoGalleryRepository implements PhotoRepository {
       numImages = _imageFiles.length;
     }
 
-    _lastUsedFileIndex = numImages - 1;
+    _lastStartFilesIndex = 0;
+    _lastEndFilesIndex = numImages - 1;
 
-    return _imageFiles.sublist(0, _lastUsedFileIndex + 1);
+    return _imageFiles.sublist(_lastStartFilesIndex, _lastEndFilesIndex + 1);
   }
 
   @override
@@ -107,11 +112,11 @@ class PhotoGalleryRepository implements PhotoRepository {
   }
 
   bool _enoughImageFiles() {
-    return _imageFiles.length - _lastUsedFileIndex + 1 >= _numImages;
+    return _imageFiles.length - _lastEndFilesIndex + 1 >= _numImages;
   }
 
   @override
-  Future<List<File>> fetchNextPhotoImages() async {
+  Future<List<File>> getNextPhotoImages() async {
     if (_numImages == 0 || _albums.isEmpty) {
       throw Exception(
           "Cannot retrieve next images before initial fetch, call fetchPhotoImages first");
@@ -120,10 +125,10 @@ class PhotoGalleryRepository implements PhotoRepository {
     if (!_enoughImageFiles()) {
       _lastAlbumIndex++;
 
-      if (_lastAlbumIndex >= _albums.length) {
+      if (_lastAlbumIndex + 1 >= _albums.length) {
         print("reached the end of the album, returning the same images");
         return _imageFiles.sublist(
-            _lastUsedFileIndex + 1 - _numImages, _lastUsedFileIndex + 1);
+            _lastStartFilesIndex, _lastEndFilesIndex + 1);
       }
 
       while (_lastAlbumIndex < _albums.length) {
@@ -137,17 +142,35 @@ class PhotoGalleryRepository implements PhotoRepository {
       }
     }
 
-    int index = _lastUsedFileIndex + _numImages;
-    if (_imageFiles.length - (_lastUsedFileIndex + 1) < _numImages) {
+    int index = _lastEndFilesIndex + _numImages;
+    if (_imageFiles.length - (_lastEndFilesIndex + 1) < _numImages) {
       print(
           "requested numImages is lower than the actual number of images, returning actual number");
       index = _imageFiles.length - 1;
     }
 
-    List<File> resList = _imageFiles.sublist(_lastUsedFileIndex + 1, index + 1);
+    List<File> resList = _imageFiles.sublist(_lastEndFilesIndex + 1, index + 1);
 
-    _lastUsedFileIndex = index;
+    _lastStartFilesIndex = _lastEndFilesIndex + 1;
+    _lastEndFilesIndex = index;
 
     return resList;
+  }
+
+  @override
+  List<File> getPreviousPhotoImages() {
+    if (_numImages == 0 || _albums.isEmpty) {
+      throw Exception(
+          "Cannot retrieve previous images before initial fetch, call fetchInitialPhotoImages first");
+    }
+
+    if (_lastStartFilesIndex != 0) {
+      _lastStartFilesIndex -= _numImages;
+      _lastEndFilesIndex = _lastStartFilesIndex + _numImages - 1;
+    } else {
+      print("reached first elements");
+    }
+
+    return _imageFiles.sublist(_lastStartFilesIndex, _lastEndFilesIndex + 1);
   }
 }

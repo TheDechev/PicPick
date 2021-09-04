@@ -22,3 +22,5 @@ class ReloadImages extends ImagesEvent with EquatableMixin {
 }
 
 class NextImages extends ImagesEvent {}
+
+class PreviousImages extends ImagesEvent {}

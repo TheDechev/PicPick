@@ -22,6 +22,8 @@ class ImagesBloc extends Bloc<ImagesEvent, ImagesState> {
       yield* _mapGetImagesToState(event);
     } else if (event is NextImages) {
       yield* _mapNextImagesToState();
+    } else if (event is PreviousImages) {
+      yield* _mapPreviousImagesToState();
     } else if (event is ReloadImages) {
       yield* _mapReloadImagesToState(event);
     } else {
@@ -46,7 +48,13 @@ class ImagesBloc extends Bloc<ImagesEvent, ImagesState> {
 
   Stream<ImagesState> _mapNextImagesToState() async* {
     yield ImagesLoading();
-    final images = await _photoRepository.fetchNextPhotoImages();
+    final images = await _photoRepository.getNextPhotoImages();
+    yield ImagesLoaded(images);
+  }
+
+  Stream<ImagesState> _mapPreviousImagesToState() async* {
+    yield ImagesLoading();
+    final images = _photoRepository.getPreviousPhotoImages();
     yield ImagesLoaded(images);
   }
 }
