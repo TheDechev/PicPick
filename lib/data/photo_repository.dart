@@ -11,18 +11,6 @@ abstract class PhotoRepository {
   void reset();
 }
 
-/*
-*  1) List of albums needs to be fetched.
-*  2) The list from (1) needs to be converted to a MediaPage
-*  3) The iteration should be done per page
-* e.g.:
-*   if (!imagePage.isLast) {
-    final nextImagePage = await imagePage.nextPage();
-    // ...
-}
-*
-* */
-
 class PhotoGalleryRepository implements PhotoRepository {
   int _numImages = 0,
       _lastAlbumIndex = 0,
@@ -75,10 +63,12 @@ class PhotoGalleryRepository implements PhotoRepository {
 
     _numImages = numImages;
 
-    // Most likely the first time we load the images from local storage
     if (_albums.isEmpty) {
-      _albums = await PhotoGallery.listAlbums(mediumType: MediumType.image);
       print("this is the first load, creating the List<Album> object");
+      _albums = await PhotoGallery.listAlbums(mediumType: MediumType.image);
+    } else {
+      print("images already loaded (cached), resetting indices");
+      _lastStartFilesIndex = _lastEndFilesIndex = _lastAlbumIndex = 0;
     }
 
     for (_lastAlbumIndex = 0;
