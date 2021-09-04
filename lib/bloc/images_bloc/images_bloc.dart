@@ -20,17 +20,33 @@ class ImagesBloc extends Bloc<ImagesEvent, ImagesState> {
   ) async* {
     if (event is GetImages) {
       yield* _mapGetImagesToState(event);
+    } else if (event is NextImages) {
+      yield* _mapNextImagesToState();
+    } else if (event is ReloadImages) {
+      yield* _mapReloadImagesToState(event);
     } else {
       throw Exception(
           "Unsupported event provided to ImagesBloc: ${event.toString()}");
     }
   }
 
+  Stream<ImagesState> _fetchImages(int numImages) async* {
+    yield ImagesLoading();
+    final images = await _photoRepository.fetchInitialPhotoImages(numImages);
+    yield ImagesLoaded(images);
+  }
+
   Stream<ImagesState> _mapGetImagesToState(GetImages event) async* {
-    if (state is ImagesInitial) {
-      yield ImagesLoading();
-      final images = await _photoRepository.fetchPhotoImages(event.numImages);
-      yield ImagesLoaded(images);
-    }
+    yield* _fetchImages(event.numImages);
+  }
+
+  Stream<ImagesState> _mapReloadImagesToState(ReloadImages event) async* {
+    yield* _fetchImages(event.numImages);
+  }
+
+  Stream<ImagesState> _mapNextImagesToState() async* {
+    yield ImagesLoading();
+    final images = await _photoRepository.fetchNextPhotoImages();
+    yield ImagesLoaded(images);
   }
 }

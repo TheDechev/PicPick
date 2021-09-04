@@ -6,23 +6,21 @@ import 'package:picpick/utils/constants.dart';
 class ImageBox extends StatefulWidget {
   final File file;
   final Function onPress;
+  final bool selected;
 
-  ImageBox({@required this.file, @required this.onPress});
+  ImageBox(
+      {@required this.file, @required this.onPress, this.selected = false});
 
   @override
-  _ImageBoxState createState() => _ImageBoxState();
+  _ImageBoxState createState() => _ImageBoxState(selected);
 }
 
 class _ImageBoxState extends State<ImageBox> {
   bool _selected = false;
 
-  bool get selected => _selected;
+  _ImageBoxState(this._selected);
 
-  set selected(bool value) {
-    setState(() {
-      _selected = value;
-    });
-  }
+  bool get selected => _selected;
 
   @override
   Widget build(BuildContext context) {

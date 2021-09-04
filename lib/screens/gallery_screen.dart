@@ -78,6 +78,8 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 IconButton(
                   onPressed: () {
                     print("forward button pressed");
+                    final imagesBloc = BlocProvider.of<ImagesBloc>(context);
+                    imagesBloc.add(NextImages());
                   },
                   icon: Icon(
                     Icons.arrow_forward_ios,
@@ -133,6 +135,7 @@ List<Widget> _convertImageFilesToWidgetList(
       Padding(
         padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
         child: ImageBox(
+          selected: false,
           file: (i < event.imageFiles.length) ? event.imageFiles[i] : null,
           onPress: (selected) {
             final counterBloc = BlocProvider.of<CounterBloc>(context);

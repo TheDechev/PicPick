@@ -5,7 +5,9 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_gallery/photo_gallery.dart';
 
 abstract class PhotoRepository {
-  Future<List<File>> fetchPhotoImages(int numImages);
+  Future<List<File>> fetchInitialPhotoImages(int numImages);
+  Future<List<File>> fetchNextPhotoImages();
+  void reset();
 }
 
 /*
@@ -21,8 +23,9 @@ abstract class PhotoRepository {
 * */
 
 class PhotoGalleryRepository implements PhotoRepository {
-  static List<Album> _albums;
-  static bool isFirstLoad = true;
+  int _numImages = 0, _lastAlbumIndex = 0, _lastUsedFileIndex = 0;
+  List<Album> _albums = [];
+  List<File> _imageFiles = [];
 
   Future<List<File>> _imagesPageToFileList(MediaPage imagesPage) async {
     print("in _imagesPageToFileList");
@@ -61,36 +64,90 @@ class PhotoGalleryRepository implements PhotoRepository {
   }
 
   @override
-  Future<List<File>> fetchPhotoImages(int numImages) async {
+  Future<List<File>> fetchInitialPhotoImages(int numImages) async {
     if (!await Permission.storage.isGranted) {
       await Permission.storage.request();
     }
 
-    if (isFirstLoad) {
+    _numImages = numImages;
+
+    // Most likely the first time we load the images from local storage
+    if (_albums.isEmpty) {
       _albums = await PhotoGallery.listAlbums(mediumType: MediumType.image);
       print("this is the first load, creating the List<Album> object");
     }
 
-    isFirstLoad = false;
-
-    List<File> imagesFile = [];
-
-    for (var i = 0; i < _albums.length; i++) {
-      print("getting mediaPage for album i=$i");
-      MediaPage imagesPage = (await _albums[i].listMedia());
-      imagesFile = imagesFile + await _imagesPageToFileList(imagesPage);
-      if (imagesFile.length >= numImages) {
+    for (_lastAlbumIndex = 0;
+        _lastAlbumIndex < _albums.length;
+        _lastAlbumIndex++) {
+      print("getting mediaPage for album index: $_lastAlbumIndex");
+      MediaPage imagesPage = (await _albums[_lastAlbumIndex].listMedia());
+      _imageFiles = _imageFiles + await _imagesPageToFileList(imagesPage);
+      if (_imageFiles.length >= numImages) {
         print("got desired number of image files=$numImages");
         break;
       }
     }
 
-    if (imagesFile.length < numImages) {
+    if (_imageFiles.length < numImages) {
       print(
           "requested numImages is lower than the actual number of images, returning actual number");
-      numImages = imagesFile.length;
+      numImages = _imageFiles.length;
     }
 
-    return imagesFile.sublist(0, numImages);
+    _lastUsedFileIndex = numImages - 1;
+
+    return _imageFiles.sublist(0, _lastUsedFileIndex + 1);
+  }
+
+  @override
+  void reset() {
+    _numImages = 0;
+    _albums.clear();
+  }
+
+  bool _enoughImageFiles() {
+    return _imageFiles.length - _lastUsedFileIndex + 1 >= _numImages;
+  }
+
+  @override
+  Future<List<File>> fetchNextPhotoImages() async {
+    if (_numImages == 0 || _albums.isEmpty) {
+      throw Exception(
+          "Cannot retrieve next images before initial fetch, call fetchPhotoImages first");
+    }
+
+    if (!_enoughImageFiles()) {
+      _lastAlbumIndex++;
+
+      if (_lastAlbumIndex >= _albums.length) {
+        print("reached the end of the album, returning the same images");
+        return _imageFiles.sublist(
+            _lastUsedFileIndex + 1 - _numImages, _lastUsedFileIndex + 1);
+      }
+
+      while (_lastAlbumIndex < _albums.length) {
+        print("getting mediaPage for album index: $_lastAlbumIndex");
+        MediaPage imagesPage = (await _albums[_lastAlbumIndex].listMedia());
+        _imageFiles = _imageFiles + await _imagesPageToFileList(imagesPage);
+        if (_enoughImageFiles()) {
+          print("got desired number of image files");
+          break;
+        }
+      }
+    }
+
+    int index = _lastUsedFileIndex + _numImages;
+    if (_imageFiles.length - (_lastUsedFileIndex + 1) < _numImages) {
+      print(
+          "requested numImages is lower than the actual number of images, returning actual number");
+      index = _imageFiles.length - 1;
+    }
+
+    List<File> resList = _imageFiles.sublist(_lastUsedFileIndex + 1, index + 1);
+
+    _lastUsedFileIndex = index;
+
+    return resList;
   }
 }
