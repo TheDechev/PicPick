@@ -108,8 +108,8 @@ class _GalleryScreenState extends State<GalleryScreen> {
               iconSize: 35,
               onPressed: () {
                 print('trash pressed - emptying');
-                final counterBloc = BlocProvider.of<CounterBloc>(context);
-                counterBloc.add(CounterEvent.reset);
+                _counterBloc.add(CounterEvent.reset);
+                _selectedItems.clear();
               },
               icon: BlocBuilder<CounterBloc, int>(builder: (context, state) {
                 if (state > 0) {
@@ -140,12 +140,6 @@ class _GalleryScreenState extends State<GalleryScreen> {
         ));
   }
 
-  bool isImageSelected(int index, ImagesLoaded event) {
-    bool isSelected = _selectedItems.contains(event.imageFiles[index].hashCode);
-    print("image is selected: $isSelected");
-    return isSelected;
-  }
-
   List<Widget> _convertImageFilesToWidgetList(
       BuildContext context, ImagesLoaded event) {
     List<Widget> widgets = [];
@@ -163,26 +157,14 @@ class _GalleryScreenState extends State<GalleryScreen> {
             padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
             child: isIndexInRange
                 ? ImageBox(
-                    selected: isImageSelected(i, event),
+                    selected:
+                        _selectedItems.contains(event.imageFiles[i].hashCode),
                     file: event.imageFiles[i],
                     onLongPress: () {
-                      Navigator.pushNamed(context, ImageScreen.RouteKey,
-                          arguments: ImageArgs(
-                              imageFile: event.imageFiles[i],
-                              heroTag: kImageHeroTag +
-                                  event.imageFiles[i].hashCode.toString()));
+                      _longPressedImage(event.imageFiles[i]);
                     },
                     onPress: (selected) {
-                      final counterBloc = BlocProvider.of<CounterBloc>(context);
-                      if (selected) {
-                        counterBloc.add(CounterEvent.increment);
-                        print("image selected");
-                        _selectedItems.add(event.imageFiles[i].hashCode);
-                      } else {
-                        print("image unselected");
-                        counterBloc.add(CounterEvent.decrement);
-                        _selectedItems.remove(event.imageFiles[i].hashCode);
-                      }
+                      _pressedImage(selected, event.imageFiles[i].hashCode);
                     },
                   )
                 : ImageBox(
@@ -195,6 +177,25 @@ class _GalleryScreenState extends State<GalleryScreen> {
     }
 
     return widgets;
+  }
+
+  void _longPressedImage(File imageFile) {
+    Navigator.pushNamed(context, ImageScreen.RouteKey,
+        arguments: ImageArgs(
+            imageFile: imageFile,
+            heroTag: kImageHeroTag + imageFile.hashCode.toString()));
+  }
+
+  void _pressedImage(bool selected, int hashCode) {
+    if (selected) {
+      _counterBloc.add(CounterEvent.increment);
+      print("image selected");
+      _selectedItems.add(hashCode);
+    } else {
+      print("image unselected");
+      _counterBloc.add(CounterEvent.decrement);
+      _selectedItems.remove(hashCode);
+    }
   }
 
   Widget _buildImagesUponLoad(BuildContext context, ImagesLoaded event) {
