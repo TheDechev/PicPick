@@ -14,14 +14,20 @@ class ImageBox extends StatefulWidget {
 }
 
 class _ImageBoxState extends State<ImageBox> {
-  bool _isPressed = false;
+  bool _selected = false;
+
+  set selected(bool value) {
+    setState(() {
+      _selected = value;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
         setState(() {
-          _isPressed = !_isPressed;
+          _selected = !_selected;
         });
         widget.onPress();
       },
@@ -45,7 +51,7 @@ class _ImageBoxState extends State<ImageBox> {
           Container(
             height: 150,
             width: 150,
-            color: Colors.pink[200].withOpacity(_isPressed ? 0.5 : 0),
+            color: Colors.pink[200].withOpacity(_selected ? 0.5 : 0),
           ),
         ],
       ),
