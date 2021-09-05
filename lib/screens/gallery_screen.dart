@@ -155,7 +155,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
               ? kImageHeroTag + event.imageFiles[i].hashCode.toString()
               : kImageHeroTag,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+            padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
             child: isIndexInRange
                 ? ImageBox(
                     selected:
@@ -167,10 +167,12 @@ class _GalleryScreenState extends State<GalleryScreen> {
                     onPress: (selected) {
                       _pressedImage(selected, event.imageFiles[i].hashCode);
                     },
+                    minHeight: (MediaQuery.of(context).size.height * 0.8) / 2,
                   )
                 : ImageBox(
                     file: null,
                     onPress: null,
+                    minHeight: (MediaQuery.of(context).size.height * 0.8) / 2,
                   ),
           ),
         ),
@@ -204,32 +206,30 @@ class _GalleryScreenState extends State<GalleryScreen> {
 
     List<Widget> widgets = _convertImageFilesToWidgetList(context, event);
 
-    return Row(
-      children: [
-        Expanded(
-          child: ListView.builder(
-            physics: NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: widgets.length ~/ 2,
-            itemBuilder: (context, index) {
-              print("index=$index");
-              return widgets[index];
-            },
-          ),
+    return Row(children: [
+      Expanded(
+        child: ListView.builder(
+          physics: NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          itemCount: widgets.length ~/ 2,
+          itemBuilder: (context, index) {
+            print("index=$index");
+            return widgets[index];
+          },
         ),
-        Expanded(
-          child: ListView.builder(
-            physics: NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: widgets.length ~/ 2,
-            itemBuilder: (context, index) {
-              index = widgets.length ~/ 2 + index;
-              print("index=$index");
-              return widgets[index];
-            },
-          ),
+      ),
+      Expanded(
+        child: ListView.builder(
+          physics: NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          itemCount: widgets.length ~/ 2,
+          itemBuilder: (context, index) {
+            index = widgets.length ~/ 2 + index;
+            print("index=$index");
+            return widgets[index];
+          },
         ),
-      ],
-    );
+      ),
+    ]);
   }
 }
