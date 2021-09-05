@@ -16,6 +16,8 @@ class ImagesLoaded extends ImagesState with EquatableMixin {
   List<Object> get props => [imageFiles];
 }
 
+class ImagesDeleted extends ImagesState {}
+
 class ImagesError extends ImagesState with EquatableMixin {
   final String message;
 

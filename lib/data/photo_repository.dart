@@ -8,7 +8,7 @@ abstract class PhotoRepository {
   Future<List<File>> fetchInitialPhotoImages(int numImages);
   Future<List<File>> getNextPhotoImages();
   List<File> getPreviousPhotoImages();
-  void reset();
+  Future<void> reset();
 }
 
 class PhotoGalleryRepository implements PhotoRepository {
@@ -64,6 +64,7 @@ class PhotoGalleryRepository implements PhotoRepository {
     _numImages = numImages;
 
     if (_albums.isEmpty) {
+      await PhotoGallery.cleanCache();
       print("this is the first load, creating the List<Album> object");
       _albums = await PhotoGallery.listAlbums(mediumType: MediumType.image);
     } else {
@@ -97,11 +98,12 @@ class PhotoGalleryRepository implements PhotoRepository {
   }
 
   @override
-  void reset() {
+  Future<void> reset() async {
     _albums.clear();
     _imageFiles.clear();
     _numImages =
         _lastStartFilesIndex = _lastEndFilesIndex = _lastAlbumIndex = 0;
+    await PhotoGallery.cleanCache();
   }
 
   bool _enoughImageFiles() {

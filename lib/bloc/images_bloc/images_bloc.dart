@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 import 'package:picpick/data/photo_repository.dart';
 
@@ -26,6 +28,8 @@ class ImagesBloc extends Bloc<ImagesEvent, ImagesState> {
       yield* _mapPreviousImagesToState();
     } else if (event is ReloadImages) {
       yield* _mapReloadImagesToState(event);
+    } else if (event is DeleteImages) {
+      yield* _mapDeleteImagesToState(event);
     } else {
       throw Exception(
           "Unsupported event provided to ImagesBloc: ${event.toString()}");
@@ -43,7 +47,7 @@ class ImagesBloc extends Bloc<ImagesEvent, ImagesState> {
   }
 
   Stream<ImagesState> _mapReloadImagesToState(ReloadImages event) async* {
-    _photoRepository.reset();
+    await _photoRepository.reset();
     yield* _fetchImages(event.numImages);
   }
 
@@ -57,5 +61,21 @@ class ImagesBloc extends Bloc<ImagesEvent, ImagesState> {
     yield ImagesLoading();
     final images = _photoRepository.getPreviousPhotoImages();
     yield ImagesLoaded(images);
+  }
+
+  Stream<ImagesState> _mapDeleteImagesToState(DeleteImages event) async* {
+    yield ImagesInitial();
+
+    for (var path in event.imagePathsToDelete) {
+      print("==== going to delete path: $path");
+      File file = File(path);
+      file.deleteSync();
+    }
+
+    imageCache.clear();
+    PaintingBinding.instance.imageCache.clear();
+    imageCache.clearLiveImages();
+
+    yield ImagesDeleted();
   }
 }

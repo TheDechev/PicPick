@@ -24,3 +24,12 @@ class ReloadImages extends ImagesEvent with EquatableMixin {
 class NextImages extends ImagesEvent {}
 
 class PreviousImages extends ImagesEvent {}
+
+class DeleteImages extends ImagesEvent with EquatableMixin {
+  final List<String> imagePathsToDelete;
+
+  DeleteImages(this.imagePathsToDelete);
+
+  @override
+  List<Object> get props => imagePathsToDelete;
+}

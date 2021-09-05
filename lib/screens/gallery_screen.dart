@@ -22,7 +22,7 @@ class GalleryScreen extends StatefulWidget {
 }
 
 class _GalleryScreenState extends State<GalleryScreen> {
-  Set _selectedItems = Set();
+  Map<int, String> _selectedItems = Map<int, String>();
   CounterBloc _counterBloc;
   ImagesBloc _imagesBloc;
 
@@ -72,7 +72,12 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 ),
                 Expanded(
                   child: Container(
-                    child: BlocBuilder<ImagesBloc, ImagesState>(
+                    child: BlocConsumer<ImagesBloc, ImagesState>(
+                      listener: (context, state) {
+                        if (state is ImagesDeleted) {
+                          _imagesBloc.add(ReloadImages(NUM_IMAGES_TO_SHOW));
+                        }
+                      },
                       builder: (context, state) {
                         if (state is ImagesInitial || state is ImagesLoading) {
                           return _buildLoadIndicator();
@@ -101,9 +106,11 @@ class _GalleryScreenState extends State<GalleryScreen> {
               iconSize: 35,
               onPressed: () {
                 print('trash pressed - emptying');
+                List<String> imagePaths = [];
+                _selectedItems.forEach((k, v) => imagePaths.add(v));
+                _imagesBloc.add(DeleteImages(imagePaths));
                 _counterBloc.add(CounterEvent.reset);
                 _selectedItems.clear();
-                _imagesBloc.add(ReloadImages(NUM_IMAGES_TO_SHOW));
               },
               icon: BlocBuilder<CounterBloc, int>(builder: (context, state) {
                 return Badge(
@@ -134,11 +141,11 @@ class _GalleryScreenState extends State<GalleryScreen> {
             heroTag: kImageHeroTag + imageFile.hashCode.toString()));
   }
 
-  void _pressedImage(bool selected, int hashCode) {
+  void _pressedImage(bool selected, File imageFile) {
     if (selected) {
       _counterBloc.add(CounterEvent.increment);
       print("image selected");
-      _selectedItems.add(hashCode);
+      _selectedItems[imageFile.hashCode] = imageFile.path;
     } else {
       print("image unselected");
       _counterBloc.add(CounterEvent.decrement);
@@ -159,14 +166,14 @@ class _GalleryScreenState extends State<GalleryScreen> {
         padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
         child: isIndexInRange
             ? ImageBox(
-                selected:
-                    _selectedItems.contains(event.imageFiles[index].hashCode),
+                selected: _selectedItems
+                    .containsKey(event.imageFiles[index].hashCode),
                 file: event.imageFiles[index],
                 onLongPress: () {
                   _longPressedImage(event.imageFiles[index]);
                 },
                 onPress: (selected) {
-                  _pressedImage(selected, event.imageFiles[index].hashCode);
+                  _pressedImage(selected, event.imageFiles[index]);
                 },
                 minHeight: (MediaQuery.of(context).size.height * 0.8) / 2.1,
               )
