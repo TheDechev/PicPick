@@ -7,7 +7,6 @@ import 'package:loading_indicator/loading_indicator.dart';
 import 'package:picpick/bloc/counter_bloc/counter_bloc.dart';
 import 'package:picpick/bloc/images_bloc/images_bloc.dart';
 import 'package:picpick/data/models/ImageArgs.dart';
-import 'package:picpick/data/photo_repository.dart';
 import 'package:picpick/utils/constants.dart';
 import 'package:picpick/widgets/image_box.dart';
 
@@ -79,10 +78,6 @@ class _GalleryScreenState extends State<GalleryScreen> {
                           return _buildLoadIndicator();
                         } else if (state is ImagesLoaded) {
                           return _buildImagesUponLoad(context, state);
-/*                          return Column(
-                              children:
-                                  .map((e) => Flexible(child: e))
-                                  .toList());*/
                         } else {
                           return Text("ERROR");
                         }
@@ -111,73 +106,25 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 _imagesBloc.add(ReloadImages(NUM_IMAGES_TO_SHOW));
               },
               icon: BlocBuilder<CounterBloc, int>(builder: (context, state) {
-                if (state > 0) {
-                  return Badge(
-                    showBadge: true,
-                    badgeColor: kBadgeColor,
-                    animationType: BadgeAnimationType.slide,
-                    badgeContent: Text(
-                      '$state',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
+                return Badge(
+                  showBadge: state > 0 ? true : false,
+                  badgeColor: kBadgeColor,
+                  animationType: BadgeAnimationType.slide,
+                  badgeContent: Text(
+                    state > 0 ? '$state' : '',
+                    style: TextStyle(
+                      color: Colors.white,
                     ),
-                    child: Icon(
-                      Icons.delete,
-                      color: Colors.pinkAccent,
-                    ),
-                  );
-                } else {
-                  return Icon(
+                  ),
+                  child: Icon(
                     Icons.delete,
                     color: Colors.pinkAccent,
-                  );
-                }
+                  ),
+                );
               }),
             ),
           ],
         ));
-  }
-
-  List<Widget> _convertImageFilesToWidgetList(
-      BuildContext context, ImagesLoaded event) {
-    List<Widget> widgets = [];
-
-    for (var i = 0; i < NUM_IMAGES_TO_SHOW; i++) {
-      bool isIndexInRange = i < event.imageFiles.length;
-      print("adding widget i=$i");
-      widgets.add(
-        Hero(
-          key: isIndexInRange ? ValueKey(event.imageFiles[i].hashCode) : null,
-          tag: isIndexInRange
-              ? kImageHeroTag + event.imageFiles[i].hashCode.toString()
-              : kImageHeroTag,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
-            child: isIndexInRange
-                ? ImageBox(
-                    selected:
-                        _selectedItems.contains(event.imageFiles[i].hashCode),
-                    file: event.imageFiles[i],
-                    onLongPress: () {
-                      _longPressedImage(event.imageFiles[i]);
-                    },
-                    onPress: (selected) {
-                      _pressedImage(selected, event.imageFiles[i].hashCode);
-                    },
-                    minHeight: (MediaQuery.of(context).size.height * 0.8) / 2.1,
-                  )
-                : ImageBox(
-                    file: null,
-                    onPress: null,
-                    minHeight: (MediaQuery.of(context).size.height * 0.8) / 2.1,
-                  ),
-          ),
-        ),
-      );
-    }
-
-    return widgets;
   }
 
   void _longPressedImage(File imageFile) {
@@ -199,20 +146,50 @@ class _GalleryScreenState extends State<GalleryScreen> {
     }
   }
 
+  Widget _buildHeroImageBox(
+      int index, BuildContext context, ImagesLoaded event) {
+    final bool isIndexInRange = index < event.imageFiles.length;
+
+    return Hero(
+      key: isIndexInRange ? ValueKey(event.imageFiles[index].hashCode) : null,
+      tag: isIndexInRange
+          ? kImageHeroTag + event.imageFiles[index].hashCode.toString()
+          : kImageHeroTag,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
+        child: isIndexInRange
+            ? ImageBox(
+                selected:
+                    _selectedItems.contains(event.imageFiles[index].hashCode),
+                file: event.imageFiles[index],
+                onLongPress: () {
+                  _longPressedImage(event.imageFiles[index]);
+                },
+                onPress: (selected) {
+                  _pressedImage(selected, event.imageFiles[index].hashCode);
+                },
+                minHeight: (MediaQuery.of(context).size.height * 0.8) / 2.1,
+              )
+            : ImageBox(
+                file: null,
+                onPress: null,
+                minHeight: (MediaQuery.of(context).size.height * 0.8) / 2.1,
+              ),
+      ),
+    );
+  }
+
   Widget _buildImagesUponLoad(BuildContext context, ImagesLoaded event) {
     print("fetched a total of ${event.imageFiles.length} images");
-
-    List<Widget> widgets = _convertImageFilesToWidgetList(context, event);
 
     return Row(children: [
       Expanded(
         child: ListView.builder(
           physics: NeverScrollableScrollPhysics(),
           shrinkWrap: true,
-          itemCount: widgets.length ~/ 2,
+          itemCount: NUM_IMAGES_TO_SHOW ~/ 2,
           itemBuilder: (context, index) {
-            print("index=$index");
-            return widgets[index];
+            return _buildHeroImageBox(index, context, event);
           },
         ),
       ),
@@ -220,11 +197,10 @@ class _GalleryScreenState extends State<GalleryScreen> {
         child: ListView.builder(
           physics: NeverScrollableScrollPhysics(),
           shrinkWrap: true,
-          itemCount: widgets.length ~/ 2,
+          itemCount: NUM_IMAGES_TO_SHOW ~/ 2,
           itemBuilder: (context, index) {
-            index = widgets.length ~/ 2 + index;
-            print("index=$index");
-            return widgets[index];
+            index = NUM_IMAGES_TO_SHOW ~/ 2 + index;
+            return _buildHeroImageBox(index, context, event);
           },
         ),
       ),
