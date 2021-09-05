@@ -74,13 +74,17 @@ class _ImageBoxState extends State<ImageBox> {
           //   constraints: BoxConstraints(minHeight: _minHeight),
           //   color: Colors.pink[200].withOpacity(_selected ? 0.5 : 0),
           // ),
-          _selected
-              ? Icon(
-                  Icons.check_circle,
-                  size: _minHeight / 6,
-                  color: kBadgeColor,
-                )
-              : Container()
+          Icon(
+            Icons.check_circle,
+            size: _minHeight / 7,
+            color: _selected ? kBadgeColor : Colors.transparent,
+          ),
+          Container(
+            decoration: BoxDecoration(
+                color: Colors.white.withOpacity(_selected ? 0.3 : 0),
+                borderRadius: BorderRadius.all(Radius.circular(10))),
+            height: _minHeight,
+          )
         ],
       ),
     );
