@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 import 'package:picpick/bloc/counter_bloc/counter_bloc.dart';
 import 'package:picpick/bloc/images_bloc/images_bloc.dart';
 import 'package:picpick/data/models/ImageArgs.dart';
@@ -72,13 +73,10 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 ),
                 Expanded(
                   child: Container(
-                    height: MediaQuery.of(context).size.height * 0.8,
                     child: BlocBuilder<ImagesBloc, ImagesState>(
                       builder: (context, state) {
-                        if (state is ImagesInitial) {
-                          return Text("Initial");
-                        } else if (state is ImagesLoading) {
-                          return Text("Loading");
+                        if (state is ImagesInitial || state is ImagesLoading) {
+                          return _buildLoadIndicator();
                         } else if (state is ImagesLoaded) {
                           return _buildImagesUponLoad(context, state);
 /*                          return Column(
@@ -167,12 +165,12 @@ class _GalleryScreenState extends State<GalleryScreen> {
                     onPress: (selected) {
                       _pressedImage(selected, event.imageFiles[i].hashCode);
                     },
-                    minHeight: (MediaQuery.of(context).size.height * 0.8) / 2,
+                    minHeight: (MediaQuery.of(context).size.height * 0.8) / 2.1,
                   )
                 : ImageBox(
                     file: null,
                     onPress: null,
-                    minHeight: (MediaQuery.of(context).size.height * 0.8) / 2,
+                    minHeight: (MediaQuery.of(context).size.height * 0.8) / 2.1,
                   ),
           ),
         ),
@@ -231,5 +229,12 @@ class _GalleryScreenState extends State<GalleryScreen> {
         ),
       ),
     ]);
+  }
+
+  Widget _buildLoadIndicator() {
+    return LoadingIndicator(
+      indicatorType: Indicator.ballClipRotateMultiple,
+      strokeWidth: 2,
+    );
   }
 }
