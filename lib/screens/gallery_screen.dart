@@ -6,7 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:picpick/bloc/counter_bloc/counter_bloc.dart';
 import 'package:picpick/bloc/images_bloc/images_bloc.dart';
-import 'package:picpick/data/models/ImageArgs.dart';
+import 'package:picpick/data/models/image_args.dart';
 import 'package:picpick/data/models/image_file.dart';
 import 'package:picpick/utils/constants.dart';
 import 'package:picpick/widgets/image_box.dart';

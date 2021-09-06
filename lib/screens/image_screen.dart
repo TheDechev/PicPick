@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:picpick/data/models/ImageArgs.dart';
+import 'package:picpick/data/models/image_args.dart';
 
 class ImageScreen extends StatelessWidget {
   static const RouteKey = '/image_screen';
