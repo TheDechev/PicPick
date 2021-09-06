@@ -68,13 +68,7 @@ class ImagesBloc extends Bloc<ImagesEvent, ImagesState> {
   Stream<ImagesState> _mapDeleteImagesToState(DeleteImages event) async* {
     yield ImagesInitial();
 
-    List<String> imageIds = [];
-
-    for (int i = 0; i < event.imageFiles.length; i++) {
-      imageIds.add(event.imageFiles[i].id);
-    }
-
-    await PhotoManager.editor.deleteWithIds(imageIds);
+    await _photoRepository.deleteImages(event.imageFiles);
 
     yield ImagesDeleted();
   }

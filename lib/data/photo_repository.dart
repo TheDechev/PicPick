@@ -11,6 +11,7 @@ abstract class PhotoRepository {
   Future<List<ImageFile>> getNextPhotoImages();
   List<ImageFile> getPreviousPhotoImages();
   Future<void> reset();
+  Future<void> deleteImages(List<ImageFile> imageFiles);
 }
 
 class PhotoGalleryRepository implements PhotoRepository {
@@ -111,7 +112,7 @@ class PhotoGalleryRepository implements PhotoRepository {
   @override
   Future<List<ImageFile>> getNextPhotoImages() async {
     if (_numImages == 0 || _imageFiles.isEmpty) {
-      throw Exception(
+      print(
           "Cannot retrieve next images before initial fetch, call fetchPhotoImages first");
     }
 
@@ -163,7 +164,7 @@ class PhotoGalleryRepository implements PhotoRepository {
   @override
   List<ImageFile> getPreviousPhotoImages() {
     if (_numImages == 0 || _assetsAlbumList.isEmpty) {
-      throw Exception(
+      print(
           "Cannot retrieve previous images before initial fetch, call fetchInitialPhotoImages first");
     }
 
@@ -175,5 +176,18 @@ class PhotoGalleryRepository implements PhotoRepository {
     }
 
     return _imageFiles.sublist(_lastStartFilesIndex, _lastEndFilesIndex + 1);
+  }
+
+  @override
+  Future<void> deleteImages(List<ImageFile> imageFiles) async {
+    List<String> imageIds = [];
+
+    for (int i = 0; i < imageFiles.length; i++) {
+      imageIds.add(imageFiles[i].id);
+    }
+
+    await PhotoManager.editor.deleteWithIds(imageIds);
+
+    reset();
   }
 }
