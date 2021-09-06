@@ -8,7 +8,7 @@ class ImagesInitial extends ImagesState {}
 class ImagesLoading extends ImagesState {}
 
 class ImagesLoaded extends ImagesState with EquatableMixin {
-  final List<File> imageFiles;
+  final List<ImageFile> imageFiles;
 
   ImagesLoaded(this.imageFiles);
 

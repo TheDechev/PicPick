@@ -7,6 +7,7 @@ import 'package:loading_indicator/loading_indicator.dart';
 import 'package:picpick/bloc/counter_bloc/counter_bloc.dart';
 import 'package:picpick/bloc/images_bloc/images_bloc.dart';
 import 'package:picpick/data/models/ImageArgs.dart';
+import 'package:picpick/data/models/image_file.dart';
 import 'package:picpick/utils/constants.dart';
 import 'package:picpick/widgets/image_box.dart';
 
@@ -22,7 +23,7 @@ class GalleryScreen extends StatefulWidget {
 }
 
 class _GalleryScreenState extends State<GalleryScreen> {
-  Map<int, String> _selectedItems = Map<int, String>();
+  Map<int, ImageFile> _selectedItems = Map<int, ImageFile>();
   CounterBloc _counterBloc;
   ImagesBloc _imagesBloc;
 
@@ -106,9 +107,9 @@ class _GalleryScreenState extends State<GalleryScreen> {
               iconSize: 35,
               onPressed: () {
                 print('trash pressed - emptying');
-                List<String> imagePaths = [];
-                _selectedItems.forEach((k, v) => imagePaths.add(v));
-                _imagesBloc.add(DeleteImages(imagePaths));
+                List<ImageFile> imageFiles = [];
+                _selectedItems.forEach((k, v) => imageFiles.add(v));
+                _imagesBloc.add(DeleteImages(imageFiles));
                 _counterBloc.add(CounterEvent.reset);
                 _selectedItems.clear();
               },
@@ -141,11 +142,11 @@ class _GalleryScreenState extends State<GalleryScreen> {
             heroTag: kImageHeroTag + imageFile.hashCode.toString()));
   }
 
-  void _pressedImage(bool selected, File imageFile) {
+  void _pressedImage(bool selected, ImageFile imageFile) {
     if (selected) {
       _counterBloc.add(CounterEvent.increment);
       print("image selected");
-      _selectedItems[imageFile.hashCode] = imageFile.path;
+      _selectedItems[imageFile.hashCode] = imageFile;
     } else {
       print("image unselected");
       _counterBloc.add(CounterEvent.decrement);
@@ -168,9 +169,9 @@ class _GalleryScreenState extends State<GalleryScreen> {
             ? ImageBox(
                 selected: _selectedItems
                     .containsKey(event.imageFiles[index].hashCode),
-                file: event.imageFiles[index],
+                file: event.imageFiles[index].file,
                 onLongPress: () {
-                  _longPressedImage(event.imageFiles[index]);
+                  _longPressedImage(event.imageFiles[index].file);
                 },
                 onPress: (selected) {
                   _pressedImage(selected, event.imageFiles[index]);

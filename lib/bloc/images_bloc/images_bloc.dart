@@ -6,6 +6,8 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
+import 'package:photo_manager/photo_manager.dart';
+import 'package:picpick/data/models/image_file.dart';
 import 'package:picpick/data/photo_repository.dart';
 
 part 'images_event.dart';
@@ -66,15 +68,13 @@ class ImagesBloc extends Bloc<ImagesEvent, ImagesState> {
   Stream<ImagesState> _mapDeleteImagesToState(DeleteImages event) async* {
     yield ImagesInitial();
 
-    for (var path in event.imagePathsToDelete) {
-      print("==== going to delete path: $path");
-      File file = File(path);
-      file.deleteSync();
+    List<String> imageIds = [];
+
+    for (int i = 0; i < event.imageFiles.length; i++) {
+      imageIds.add(event.imageFiles[i].id);
     }
 
-    imageCache.clear();
-    PaintingBinding.instance.imageCache.clear();
-    imageCache.clearLiveImages();
+    await PhotoManager.editor.deleteWithIds(imageIds);
 
     yield ImagesDeleted();
   }

@@ -26,10 +26,10 @@ class NextImages extends ImagesEvent {}
 class PreviousImages extends ImagesEvent {}
 
 class DeleteImages extends ImagesEvent with EquatableMixin {
-  final List<String> imagePathsToDelete;
+  final List<ImageFile> imageFiles;
 
-  DeleteImages(this.imagePathsToDelete);
+  DeleteImages(this.imageFiles);
 
   @override
-  List<Object> get props => imagePathsToDelete;
+  List<Object> get props => imageFiles;
 }

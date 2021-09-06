@@ -28,11 +28,11 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.3
   badges: ^1.1.1
-  photo_gallery: ^1.0.1
   permission_handler: ^8.1.4+2
   flutter_bloc: ^7.2.0
   equatable: ^2.0.3
   loading_indicator: ^3.0.1
+  photo_manager: ^1.3.1
 
 dev_dependencies:
   flutter_test:
