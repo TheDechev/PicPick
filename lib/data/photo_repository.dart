@@ -70,7 +70,12 @@ class PhotoGalleryRepository implements PhotoRepository {
       _imageFiles.clear();
     }
 
-    for (_lastAlbumIndex = 1;
+    if (_assetsAlbumList.isEmpty) {
+      print("error - no albums");
+      return [];
+    }
+
+    for (_lastAlbumIndex = 0;
         _lastAlbumIndex < _assetsAlbumList.length;
         _lastAlbumIndex++) {
       print("getting images for album num: $_lastAlbumIndex");
@@ -78,6 +83,11 @@ class PhotoGalleryRepository implements PhotoRepository {
       List<AssetEntity> imageAssets = await album.assetList;
       _imageFiles =
           _imageFiles + await _imageAssetsToImageFileList(imageAssets);
+      if (album.isAll) {
+        print(
+            "first album contains all images, not going to use _lastAlbumIndex");
+        break;
+      }
       if (_imageFiles.length >= numImages) {
         print("got desired number of image files=$numImages");
         break;
@@ -117,13 +127,14 @@ class PhotoGalleryRepository implements PhotoRepository {
     }
 
     if (!_enoughImageFiles()) {
-      if (_lastAlbumIndex + 1 >= _assetsAlbumList.length) {
+      if (_assetsAlbumList[_lastAlbumIndex].isAll ||
+          _lastAlbumIndex + 1 >= _assetsAlbumList.length) {
         if (_imageFiles.length - (_lastEndFilesIndex + 1) > 0) {
           print("returning last images");
           return _imageFiles.sublist(
               _lastEndFilesIndex + 1, _imageFiles.length);
         }
-        print("reached the last album, returning the same images");
+        print("reached end of albums, returning the same images");
         return _imageFiles.sublist(
             _lastStartFilesIndex, _lastEndFilesIndex + 1);
       }
