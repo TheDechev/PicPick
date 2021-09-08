@@ -4,7 +4,7 @@ import 'package:picpick/bloc/counter_bloc/counter_bloc.dart';
 import 'package:picpick/bloc/images_bloc/images_bloc.dart';
 import 'package:picpick/data/photo_repository.dart';
 import 'package:picpick/screens/gallery_screen.dart';
-import 'package:picpick/screens/main_screen.dart';
+import 'package:picpick/screens/how_to_screen.dart';
 //import 'package:photo_manager/photo_manager.dart';
 
 class WelcomeScreen extends StatelessWidget {
@@ -52,7 +52,11 @@ class WelcomeScreen extends StatelessWidget {
                 )),
             TextButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, MainScreen.RouteKey);
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return HowToScreen();
+                      });
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,

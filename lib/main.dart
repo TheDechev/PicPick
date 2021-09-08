@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:picpick/data/photo_repository.dart';
 import 'package:picpick/screens/gallery_screen.dart';
 import 'package:picpick/screens/image_screen.dart';
-import 'package:picpick/screens/main_screen.dart';
+import 'package:picpick/screens/how_to_screen.dart';
 import 'package:picpick/screens/welcome_screen.dart';
 
 import 'bloc/counter_bloc/counter_bloc.dart';
@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
         initialRoute: WelcomeScreen.RouteKey,
         routes: {
           WelcomeScreen.RouteKey: (context) => WelcomeScreen(),
-          MainScreen.RouteKey: (context) => MainScreen(),
+          HowToScreen.RouteKey: (context) => HowToScreen(),
           GalleryScreen.RouteKey: (context) => GalleryScreen(),
           ImageScreen.RouteKey: (context) => ImageScreen(),
         },
