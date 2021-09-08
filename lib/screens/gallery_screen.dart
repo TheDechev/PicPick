@@ -52,7 +52,13 @@ class _GalleryScreenState extends State<GalleryScreen> {
           centerTitle: true,
           elevation: 10,
           actions: [
-            IconButton(onPressed: () {}, icon: Icon(Icons.clear_all)),
+            IconButton(
+                onPressed: () {
+                  _selectedItems.clear();
+                  _imagesBloc.add(ReloadImages(NUM_IMAGES_TO_SHOW));
+                  _counterBloc.add(CounterEvent.reset);
+                },
+                icon: Icon(Icons.clear_all)),
           ],
         ),
         backgroundColor: Colors.white,
