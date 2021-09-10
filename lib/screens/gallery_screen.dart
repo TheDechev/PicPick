@@ -65,32 +65,32 @@ class _GalleryScreenState extends State<GalleryScreen> {
         body: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            Expanded(
-              child: GestureDetector(
-                onHorizontalDragEnd: (DragEndDetails details) {
-                  if (details.primaryVelocity > 0) {
-                    _imagesBloc.add(PreviousImages());
-                  } else if (details.primaryVelocity < 0) {
-                    _imagesBloc.add(NextImages());
-                  }
-                },
-                child: Container(
-                  child: BlocConsumer<ImagesBloc, ImagesState>(
-                    listener: (context, state) {
-                      if (state is ImagesDeleted) {
-                        _imagesBloc.add(ReloadImages(NUM_IMAGES_TO_SHOW));
-                      }
-                    },
-                    builder: (context, state) {
-                      if (state is ImagesInitial || state is ImagesLoading) {
-                        return _buildLoadIndicator();
-                      } else if (state is ImagesLoaded) {
-                        return _buildImagesUponLoad(context, state);
-                      } else {
-                        return Text("ERROR");
-                      }
-                    },
-                  ),
+            GestureDetector(
+              onHorizontalDragEnd: (DragEndDetails details) {
+                if (details.primaryVelocity > 0) {
+                  _imagesBloc.add(PreviousImages());
+                } else if (details.primaryVelocity < 0) {
+                  _imagesBloc.add(NextImages());
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+                child: BlocConsumer<ImagesBloc, ImagesState>(
+                  listener: (context, state) {
+                    if (state is ImagesDeleted) {
+                      _imagesBloc.add(ReloadImages(NUM_IMAGES_TO_SHOW));
+                    }
+                  },
+                  builder: (context, state) {
+                    if (state is ImagesInitial || state is ImagesLoading) {
+                      return _buildLoadIndicator();
+                    } else if (state is ImagesLoaded) {
+                      // return _buildLoadIndicator();
+                      return _buildImagesUponLoad(context, state);
+                    } else {
+                      return Text("ERROR");
+                    }
+                  },
                 ),
               ),
             ),
@@ -150,7 +150,9 @@ class _GalleryScreenState extends State<GalleryScreen> {
     final bool isIndexInRange = index < event.imageFiles.length;
 
     return Hero(
-      key: isIndexInRange ? ValueKey(event.imageFiles[index].hashCode) : null,
+      key: isIndexInRange
+          ? ValueKey(event.imageFiles[index].hashCode)
+          : ValueKey("image$index"),
       tag: isIndexInRange
           ? kImageHeroTag + event.imageFiles[index].hashCode.toString()
           : kImageHeroTag,
