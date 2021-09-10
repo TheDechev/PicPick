@@ -65,49 +65,34 @@ class _GalleryScreenState extends State<GalleryScreen> {
         body: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            Row(
-              children: [
-                IconButton(
-                  onPressed: () {
-                    print("back button pressed");
+            Expanded(
+              child: GestureDetector(
+                onHorizontalDragEnd: (DragEndDetails details) {
+                  if (details.primaryVelocity > 0) {
                     _imagesBloc.add(PreviousImages());
-                  },
-                  icon: Icon(
-                    Icons.arrow_back_ios,
-                    color: Colors.pink,
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    child: BlocConsumer<ImagesBloc, ImagesState>(
-                      listener: (context, state) {
-                        if (state is ImagesDeleted) {
-                          _imagesBloc.add(ReloadImages(NUM_IMAGES_TO_SHOW));
-                        }
-                      },
-                      builder: (context, state) {
-                        if (state is ImagesInitial || state is ImagesLoading) {
-                          return _buildLoadIndicator();
-                        } else if (state is ImagesLoaded) {
-                          return _buildImagesUponLoad(context, state);
-                        } else {
-                          return Text("ERROR");
-                        }
-                      },
-                    ),
-                  ),
-                ),
-                IconButton(
-                  onPressed: () {
-                    print("forward button pressed");
+                  } else if (details.primaryVelocity < 0) {
                     _imagesBloc.add(NextImages());
-                  },
-                  icon: Icon(
-                    Icons.arrow_forward_ios,
-                    color: Colors.pink,
+                  }
+                },
+                child: Container(
+                  child: BlocConsumer<ImagesBloc, ImagesState>(
+                    listener: (context, state) {
+                      if (state is ImagesDeleted) {
+                        _imagesBloc.add(ReloadImages(NUM_IMAGES_TO_SHOW));
+                      }
+                    },
+                    builder: (context, state) {
+                      if (state is ImagesInitial || state is ImagesLoading) {
+                        return _buildLoadIndicator();
+                      } else if (state is ImagesLoaded) {
+                        return _buildImagesUponLoad(context, state);
+                      } else {
+                        return Text("ERROR");
+                      }
+                    },
                   ),
                 ),
-              ],
+              ),
             ),
             IconButton(
               iconSize: 35,
