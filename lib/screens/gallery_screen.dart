@@ -13,6 +13,8 @@ import 'package:picpick/widgets/image_box.dart';
 
 import 'image_screen.dart';
 
+enum DotsMenuItem { ClearAll, GridSize, ReportProblem }
+
 class GalleryScreen extends StatefulWidget {
   static const RouteKey = '/gallery_screen';
 
@@ -50,13 +52,18 @@ class _GalleryScreenState extends State<GalleryScreen> {
           centerTitle: true,
           elevation: 10,
           actions: [
-            IconButton(
-                onPressed: () {
-                  _selectedItems.clear();
-                  _imagesBloc.add(ReloadImages(_numImagesToShow));
-                  _counterBloc.add(CounterEvent.reset);
-                },
-                icon: Icon(Icons.clear_all)),
+            PopupMenuButton(
+              onSelected: (item) => _selectedMenuItem(context, item),
+              itemBuilder: (context) => [
+                PopupMenuItem<DotsMenuItem>(
+                    value: DotsMenuItem.ClearAll, child: Text("Clear All")),
+                PopupMenuItem<DotsMenuItem>(
+                    value: DotsMenuItem.GridSize, child: Text("Change grid")),
+                PopupMenuItem<DotsMenuItem>(
+                    value: DotsMenuItem.ReportProblem,
+                    child: Text("Report a problem")),
+              ],
+            ),
           ],
         ),
         backgroundColor: Colors.white,
@@ -215,5 +222,24 @@ class _GalleryScreenState extends State<GalleryScreen> {
       indicatorType: Indicator.ballClipRotateMultiple,
       strokeWidth: 2,
     );
+  }
+
+  void _selectedMenuItem(BuildContext context, DotsMenuItem item) {
+    switch (item) {
+      case DotsMenuItem.ClearAll:
+        _selectedItems.clear();
+        _imagesBloc.add(ReloadImages(_numImagesToShow));
+        _counterBloc.add(CounterEvent.reset);
+        break;
+      case DotsMenuItem.GridSize:
+        print("grid size selected");
+        break;
+      case DotsMenuItem.ReportProblem:
+        print("report a problem selected");
+        break;
+      default:
+        print("unknown value");
+        break;
+    }
   }
 }
