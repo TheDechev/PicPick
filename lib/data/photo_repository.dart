@@ -62,8 +62,11 @@ class PhotoGalleryRepository implements PhotoRepository {
     if (_assetsAlbumList.isEmpty) {
       await PhotoManager.clearFileCache();
       print("this is the first load, creating the List<Album> object");
-      _assetsAlbumList =
-          await PhotoManager.getAssetPathList(type: RequestType.image);
+      FilterOption filter =
+          FilterOption(sizeConstraint: SizeConstraint(ignoreSize: true));
+      FilterOptionGroup optionGroup = FilterOptionGroup(imageOption: filter);
+      _assetsAlbumList = await PhotoManager.getAssetPathList(
+          type: RequestType.image, filterOption: optionGroup);
     } else {
       print("images already loaded (cached), resetting indices");
       _lastStartFilesIndex = _lastEndFilesIndex = _lastAlbumIndex = 0;
