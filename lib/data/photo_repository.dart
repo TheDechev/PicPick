@@ -18,9 +18,22 @@ class PhotoGalleryRepository implements PhotoRepository {
   int _numImages = 0,
       _lastAlbumIndex = 0,
       _lastStartFilesIndex = 0,
-      _lastEndFilesIndex = 0;
+      _lastEndFilesIndex = 0,
+      _lastStartAssetRange = 0,
+      _lastEndAssetRange = 0;
+  AssetPathEntity _lastAlbum;
   List<AssetPathEntity> _assetsAlbumList = [];
   List<ImageFile> _imageFiles = [];
+
+  @override
+  Future<void> reset() async {
+    _assetsAlbumList.clear();
+    _imageFiles.clear();
+    _numImages = _lastStartFilesIndex = _lastEndFilesIndex =
+        _lastAlbumIndex = _lastStartAssetRange = _lastEndAssetRange = 0;
+    await PhotoManager.clearFileCache();
+    _lastAlbum = null;
+  }
 
   Future<List<ImageFile>> _imageAssetsToImageFileList(
       List<AssetEntity> imageAssets) async {
@@ -43,12 +56,20 @@ class PhotoGalleryRepository implements PhotoRepository {
     return imageFiles;
   }
 
+  Future<void> _fetchMoreFilesFromAlbum() async {
+    while (_lastAlbum.assetCount > _lastEndAssetRange && !_enoughImageFiles()) {
+      _lastStartAssetRange = _lastEndAssetRange;
+      _lastEndAssetRange = _lastEndAssetRange + _numImages;
+      List<AssetEntity> imageAssets = await _lastAlbum.getAssetListRange(
+          start: _lastStartAssetRange, end: _lastEndAssetRange);
+      _imageFiles =
+          _imageFiles + await _imageAssetsToImageFileList(imageAssets);
+    }
+  }
+
   @override
   Future<List<ImageFile>> fetchInitialPhotoImages(int numImages) async {
     if (!await Permission.storage.isGranted) {
-      //todo: check if below is necessary upon first usage
-      // await Permission.storage.request();
-
       var result = await PhotoManager.requestPermissionExtend();
       if (result.isAuth) {
         print("permission granted");
@@ -82,16 +103,14 @@ class PhotoGalleryRepository implements PhotoRepository {
         _lastAlbumIndex < _assetsAlbumList.length;
         _lastAlbumIndex++) {
       print("getting images for album num: $_lastAlbumIndex");
-      AssetPathEntity album = _assetsAlbumList[_lastAlbumIndex];
-      List<AssetEntity> imageAssets = await album.assetList;
-      _imageFiles =
-          _imageFiles + await _imageAssetsToImageFileList(imageAssets);
-      if (album.isAll) {
-        print(
-            "first album contains all images, not going to use _lastAlbumIndex");
+      _lastAlbum = _assetsAlbumList[_lastAlbumIndex];
+
+      await _fetchMoreFilesFromAlbum();
+
+      if (_lastAlbum.isAll) {
+        print("album contains all images, not going to use _lastAlbumIndex");
         break;
-      }
-      if (_imageFiles.length >= numImages) {
+      } else if (_imageFiles.length >= numImages) {
         print("got desired number of image files=$numImages");
         break;
       }
@@ -109,17 +128,20 @@ class PhotoGalleryRepository implements PhotoRepository {
     return _imageFiles.sublist(_lastStartFilesIndex, _lastEndFilesIndex + 1);
   }
 
-  @override
-  Future<void> reset() async {
-    _assetsAlbumList.clear();
-    _imageFiles.clear();
-    _numImages =
-        _lastStartFilesIndex = _lastEndFilesIndex = _lastAlbumIndex = 0;
-    await PhotoManager.clearFileCache();
-  }
-
   bool _enoughImageFiles() {
     return _imageFiles.length - (_lastEndFilesIndex + 1) >= _numImages;
+  }
+
+  bool _isAllAlbum() {
+    return _assetsAlbumList[_lastAlbumIndex].isAll;
+  }
+
+  bool _isLastAlbum() {
+    return _lastAlbumIndex + 1 >= _assetsAlbumList.length;
+  }
+
+  bool _moreImagesLeftInRange() {
+    return _imageFiles.length - (_lastEndFilesIndex + 1) > 0;
   }
 
   @override
@@ -129,34 +151,27 @@ class PhotoGalleryRepository implements PhotoRepository {
           "Cannot retrieve next images before initial fetch, call fetchPhotoImages first");
     }
 
-    if (!_enoughImageFiles()) {
-      if (_assetsAlbumList[_lastAlbumIndex].isAll ||
-          _lastAlbumIndex + 1 >= _assetsAlbumList.length) {
-        if (_imageFiles.length - (_lastEndFilesIndex + 1) > 0) {
-          print("returning last images");
+    while (!_enoughImageFiles()) {
+      await _fetchMoreFilesFromAlbum();
+
+      if (_isAllAlbum() || _isLastAlbum()) {
+        if (_enoughImageFiles()) {
+          print("got enough images from isAll/last album");
+          break;
+        } else {
+          if (_moreImagesLeftInRange()) {
+            print("returning last images");
+            return _imageFiles.sublist(
+                _lastEndFilesIndex + 1, _imageFiles.length);
+          }
+          print("reached end of isAll/last album, returning the same images");
           return _imageFiles.sublist(
-              _lastEndFilesIndex + 1, _imageFiles.length);
+              _lastStartFilesIndex, _lastEndFilesIndex + 1);
         }
-        print("reached end of albums, returning the same images");
-        return _imageFiles.sublist(
-            _lastStartFilesIndex, _lastEndFilesIndex + 1);
       }
 
       _lastAlbumIndex++;
-      while (_lastAlbumIndex < _assetsAlbumList.length) {
-        //todo: convert below to a function and use both here and initial fetch
-        print("getting images for album num: $_lastAlbumIndex");
-        AssetPathEntity album = _assetsAlbumList[_lastAlbumIndex];
-        List<AssetEntity> imageAssets = await album.assetList;
-        _imageFiles =
-            _imageFiles + await _imageAssetsToImageFileList(imageAssets);
-
-        if (_enoughImageFiles()) {
-          print("got desired number of image files");
-          break;
-        }
-        _lastAlbumIndex++;
-      }
+      _lastAlbum = _assetsAlbumList[_lastAlbumIndex];
     }
 
     int index = _lastEndFilesIndex + _numImages;

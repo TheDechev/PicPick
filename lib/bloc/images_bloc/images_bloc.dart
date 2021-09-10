@@ -45,6 +45,7 @@ class ImagesBloc extends Bloc<ImagesEvent, ImagesState> {
   }
 
   Stream<ImagesState> _mapGetImagesToState(GetImages event) async* {
+    await _photoRepository.reset();
     yield* _fetchImages(event.numImages);
   }
 
