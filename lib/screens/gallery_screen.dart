@@ -13,8 +13,6 @@ import 'package:picpick/widgets/image_box.dart';
 
 import 'image_screen.dart';
 
-const int NUM_IMAGES_TO_SHOW = 4;
-
 class GalleryScreen extends StatefulWidget {
   static const RouteKey = '/gallery_screen';
 
@@ -26,13 +24,13 @@ class _GalleryScreenState extends State<GalleryScreen> {
   Map<int, ImageFile> _selectedItems = Map<int, ImageFile>();
   CounterBloc _counterBloc;
   ImagesBloc _imagesBloc;
+  int _numImagesToShow = kDefaultNumImagesToShow;
 
   @override
   void initState() {
     _imagesBloc = BlocProvider.of<ImagesBloc>(context);
     _counterBloc = BlocProvider.of<CounterBloc>(context);
-
-    _imagesBloc.add(GetImages(NUM_IMAGES_TO_SHOW));
+    _imagesBloc.add(GetImages(_numImagesToShow));
 
     super.initState();
   }
@@ -55,7 +53,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
             IconButton(
                 onPressed: () {
                   _selectedItems.clear();
-                  _imagesBloc.add(ReloadImages(NUM_IMAGES_TO_SHOW));
+                  _imagesBloc.add(ReloadImages(_numImagesToShow));
                   _counterBloc.add(CounterEvent.reset);
                 },
                 icon: Icon(Icons.clear_all)),
@@ -78,7 +76,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 child: BlocConsumer<ImagesBloc, ImagesState>(
                   listener: (context, state) {
                     if (state is ImagesDeleted) {
-                      _imagesBloc.add(ReloadImages(NUM_IMAGES_TO_SHOW));
+                      _imagesBloc.add(ReloadImages(_numImagesToShow));
                     }
                   },
                   builder: (context, state) {
@@ -155,7 +153,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
           : ValueKey("image$index"),
       tag: isIndexInRange
           ? kImageHeroTag + event.imageFiles[index].hashCode.toString()
-          : kImageHeroTag,
+          : kImageHeroTag + index.toString(),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
         child: isIndexInRange
@@ -169,12 +167,16 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 onPress: (selected) {
                   _pressedImage(selected, event.imageFiles[index]);
                 },
-                minHeight: (MediaQuery.of(context).size.height * 0.8) / 2.1,
+                minHeight: (MediaQuery.of(context).size.height * 0.8) /
+                    (_numImagesToShow / 2) /
+                    1.1,
               )
             : ImageBox(
                 file: null,
                 onPress: null,
-                minHeight: (MediaQuery.of(context).size.height * 0.8) / 2.1,
+                minHeight: (MediaQuery.of(context).size.height * 0.8) /
+                    (_numImagesToShow / 2) /
+                    1.1,
               ),
       ),
     );
@@ -188,7 +190,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
         child: ListView.builder(
           physics: NeverScrollableScrollPhysics(),
           shrinkWrap: true,
-          itemCount: NUM_IMAGES_TO_SHOW ~/ 2,
+          itemCount: _numImagesToShow ~/ 2,
           itemBuilder: (context, index) {
             return _buildHeroImageBox(index, context, event);
           },
@@ -198,9 +200,9 @@ class _GalleryScreenState extends State<GalleryScreen> {
         child: ListView.builder(
           physics: NeverScrollableScrollPhysics(),
           shrinkWrap: true,
-          itemCount: NUM_IMAGES_TO_SHOW ~/ 2,
+          itemCount: _numImagesToShow ~/ 2,
           itemBuilder: (context, index) {
-            index = NUM_IMAGES_TO_SHOW ~/ 2 + index;
+            index = _numImagesToShow ~/ 2 + index;
             return _buildHeroImageBox(index, context, event);
           },
         ),
