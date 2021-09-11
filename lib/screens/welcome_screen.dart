@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:picpick/screens/gallery_screen.dart';
 import 'package:picpick/screens/how_to_screen.dart';
+import 'package:picpick/utils/constants.dart';
 
 class WelcomeScreen extends StatelessWidget {
   static const RouteKey = '/welcome_screen';
@@ -14,12 +15,13 @@ class WelcomeScreen extends StatelessWidget {
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'Welcome to PicPick!',
-                style: TextStyle(
-                    fontSize: 60,
-                    color: Colors.pinkAccent,
-                    fontWeight: FontWeight.w700),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  CustomTitleText("Welcome to"),
+                  Hero(tag: kPicPickHeroTag, child: CustomTitleText("PicPick!"))
+                ],
               ),
             ),
             IconButton(
@@ -53,6 +55,14 @@ class WelcomeScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Text CustomTitleText(String text) {
+    return Text(
+      text,
+      style: TextStyle(
+          fontSize: 60, color: Colors.pinkAccent, fontWeight: FontWeight.w700),
     );
   }
 }

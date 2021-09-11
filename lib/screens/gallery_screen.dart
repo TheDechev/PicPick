@@ -52,9 +52,13 @@ class _GalleryScreenState extends State<GalleryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Gallery'),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(30),
+          )),
+          title: Hero(tag: kPicPickHeroTag, child: Text('PicPick')),
           centerTitle: true,
-          elevation: 10,
+          elevation: 6,
           actions: [
             PopupMenuButton(
               shape: kRoundedShape,
