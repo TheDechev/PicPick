@@ -10,10 +10,12 @@ import 'package:picpick/data/models/image_args.dart';
 import 'package:picpick/data/models/image_file.dart';
 import 'package:picpick/utils/constants.dart';
 import 'package:picpick/widgets/image_box.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'image_screen.dart';
 
 enum DotsMenuItem { ClearAll, GridSize, ReportProblem }
+const kGridSizeKey = 'grid_size';
 
 class GalleryScreen extends StatefulWidget {
   static const RouteKey = '/gallery_screen';
@@ -26,13 +28,14 @@ class _GalleryScreenState extends State<GalleryScreen> {
   Map<int, ImageFile> _selectedItems = Map<int, ImageFile>();
   CounterBloc _counterBloc;
   ImagesBloc _imagesBloc;
-  int _numImagesToShow = kDefaultNumImagesToShow;
+  int _numImagesToShow;
+  SharedPreferences _sharedPref;
 
   @override
   void initState() {
     _imagesBloc = BlocProvider.of<ImagesBloc>(context);
     _counterBloc = BlocProvider.of<CounterBloc>(context);
-    _imagesBloc.add(GetImages(_numImagesToShow));
+    SharedPreferences.getInstance().then((value) => _updatePage(value));
 
     super.initState();
   }
@@ -40,6 +43,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
   @override
   void dispose() {
     _counterBloc.add(CounterEvent.reset);
+    _imagesBloc.add(ResetImages());
 
     super.dispose();
   }
@@ -235,6 +239,9 @@ class _GalleryScreenState extends State<GalleryScreen> {
   }
 
   void _reloadPage({int numImages = kDefaultNumImagesToShow}) {
+    if (numImages != kDefaultNumImagesToShow) {
+      _sharedPref.setInt(kGridSizeKey, numImages);
+    }
     _numImagesToShow = numImages;
     _imagesBloc.add(ReloadImages(_numImagesToShow));
     _counterBloc.add(CounterEvent.reset);
@@ -291,5 +298,12 @@ class _GalleryScreenState extends State<GalleryScreen> {
         Navigator.pop(context);
       },
     );
+  }
+
+  _updatePage(SharedPreferences value) {
+    _sharedPref = value;
+    _numImagesToShow =
+        _sharedPref.getInt(kGridSizeKey) ?? kDefaultNumImagesToShow;
+    _imagesBloc.add(GetImages(_numImagesToShow));
   }
 }

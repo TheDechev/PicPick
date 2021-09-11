@@ -33,3 +33,5 @@ class DeleteImages extends ImagesEvent with EquatableMixin {
   @override
   List<Object> get props => imageFiles;
 }
+
+class ResetImages extends ImagesEvent {}

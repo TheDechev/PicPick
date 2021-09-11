@@ -32,6 +32,8 @@ class ImagesBloc extends Bloc<ImagesEvent, ImagesState> {
       yield* _mapReloadImagesToState(event);
     } else if (event is DeleteImages) {
       yield* _mapDeleteImagesToState(event);
+    } else if (event is ResetImages) {
+      yield* _mapResetImagesToState();
     } else {
       throw Exception(
           "Unsupported event provided to ImagesBloc: ${event.toString()}");
@@ -72,5 +74,10 @@ class ImagesBloc extends Bloc<ImagesEvent, ImagesState> {
     await _photoRepository.deleteImages(event.imageFiles);
 
     yield ImagesDeleted();
+  }
+
+  Stream<ImagesState> _mapResetImagesToState() async* {
+    await _photoRepository.reset();
+    yield ImagesInitial();
   }
 }
