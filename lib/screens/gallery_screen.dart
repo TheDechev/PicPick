@@ -48,6 +48,22 @@ class _GalleryScreenState extends State<GalleryScreen> {
     super.dispose();
   }
 
+  bool _isSwipeLeft(DragEndDetails details) {
+    return details.primaryVelocity > 0;
+  }
+
+  bool _isSwipeDown(DragEndDetails details) {
+    return _isSwipeLeft(details); /*Same logic, just vertically*/
+  }
+
+  bool _isSwipeRight(DragEndDetails details) {
+    return details.primaryVelocity < 0;
+  }
+
+  bool _isSwipeUp(DragEndDetails details) {
+    return _isSwipeRight(details); /*Same logic, just vertically*/
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,10 +95,17 @@ class _GalleryScreenState extends State<GalleryScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             GestureDetector(
+              onVerticalDragEnd: (DragEndDetails details) {
+                if (_isSwipeDown(details)) {
+                  print("swiped down");
+                } else if (_isSwipeUp(details)) {
+                  print("swiped up");
+                }
+              },
               onHorizontalDragEnd: (DragEndDetails details) {
-                if (details.primaryVelocity > 0) {
+                if (_isSwipeLeft(details)) {
                   _imagesBloc.add(PreviousImages());
-                } else if (details.primaryVelocity < 0) {
+                } else if (_isSwipeRight(details)) {
                   _imagesBloc.add(NextImages());
                 }
               },
