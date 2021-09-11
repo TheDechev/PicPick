@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -9,16 +10,28 @@ class ImageBox extends StatefulWidget {
   final Function onLongPress;
   final bool selected;
   final double minHeight;
+  _ImageBoxState instance;
+  final Object opaque;
 
   ImageBox(
       {@required this.file,
       @required this.minHeight,
       this.onPress,
       this.selected = false,
-      this.onLongPress});
+      this.onLongPress,
+      this.opaque});
 
   @override
-  _ImageBoxState createState() => _ImageBoxState(selected, minHeight);
+  _ImageBoxState createState() {
+    instance = _ImageBoxState(selected, minHeight);
+    return instance;
+  }
+
+  void setSelectValue(bool value) {
+    instance.selected = value;
+  }
+
+  bool getSelectedValue() => instance.selected;
 }
 
 class _ImageBoxState extends State<ImageBox> {
@@ -28,6 +41,12 @@ class _ImageBoxState extends State<ImageBox> {
   _ImageBoxState(this._selected, this._minHeight);
 
   bool get selected => _selected;
+
+  set selected(bool value) {
+    setState(() {
+      _selected = value;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

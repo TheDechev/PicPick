@@ -30,6 +30,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
   ImagesBloc _imagesBloc;
   int _numImagesToShow;
   SharedPreferences _sharedPref;
+  List<ImageBox> _shownImageBoxes = [];
 
   @override
   void initState() {
@@ -97,9 +98,31 @@ class _GalleryScreenState extends State<GalleryScreen> {
             GestureDetector(
               onVerticalDragEnd: (DragEndDetails details) {
                 if (_isSwipeDown(details)) {
-                  print("swiped down");
+                  print(
+                      "swipe down, _shownImageBoxes.length=${_shownImageBoxes.length}");
+                  for (var i = 0; i < _shownImageBoxes.length; i++) {
+                    ImageFile imageFile =
+                        _shownImageBoxes[i].opaque as ImageFile;
+                    if (_shownImageBoxes[i].getSelectedValue() &&
+                        imageFile != null) {
+                      _shownImageBoxes[i].setSelectValue(false);
+                      _counterBloc.add(CounterEvent.decrement);
+                      _selectedItems.remove(imageFile.hashCode);
+                    }
+                  }
                 } else if (_isSwipeUp(details)) {
-                  print("swiped up");
+                  print(
+                      "swipe up, _shownImageBoxes.length=${_shownImageBoxes.length}");
+                  for (var i = 0; i < _shownImageBoxes.length; i++) {
+                    ImageFile imageFile =
+                        _shownImageBoxes[i].opaque as ImageFile;
+                    if (!_shownImageBoxes[i].getSelectedValue() &&
+                        imageFile != null) {
+                      _shownImageBoxes[i].setSelectValue(true);
+                      _counterBloc.add(CounterEvent.increment);
+                      _selectedItems[imageFile.hashCode] = imageFile;
+                    }
+                  }
                 }
               },
               onHorizontalDragEnd: (DragEndDetails details) {
@@ -194,6 +217,20 @@ class _GalleryScreenState extends State<GalleryScreen> {
   Widget _buildHeroImageBox(
       int index, BuildContext context, ImagesLoaded event) {
     final bool isIndexInRange = index < event.imageFiles.length;
+    final double minHeight = (MediaQuery.of(context).size.height * 0.8) /
+        (_numImagesToShow / 2) /
+        1.1;
+    final ImageBox imageBox = isIndexInRange
+        ? buildImageBox(event, index, context, minHeight)
+        : ImageBox(
+            file: null,
+            onPress: null,
+            minHeight: minHeight,
+          );
+
+    if (imageBox.file != null) {
+      _shownImageBoxes.add(imageBox);
+    }
 
     return Hero(
       key: isIndexInRange
@@ -204,34 +241,31 @@ class _GalleryScreenState extends State<GalleryScreen> {
           : kImageHeroTag + index.toString(),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
-        child: isIndexInRange
-            ? ImageBox(
-                selected: _selectedItems
-                    .containsKey(event.imageFiles[index].hashCode),
-                file: event.imageFiles[index].file,
-                onLongPress: () {
-                  _longPressedImage(event.imageFiles[index].file);
-                },
-                onPress: (selected) {
-                  _pressedImage(selected, event.imageFiles[index]);
-                },
-                minHeight: (MediaQuery.of(context).size.height * 0.8) /
-                    (_numImagesToShow / 2) /
-                    1.1,
-              )
-            : ImageBox(
-                file: null,
-                onPress: null,
-                minHeight: (MediaQuery.of(context).size.height * 0.8) /
-                    (_numImagesToShow / 2) /
-                    1.1,
-              ),
+        child: imageBox,
       ),
+    );
+  }
+
+  ImageBox buildImageBox(
+      ImagesLoaded event, int index, BuildContext context, double minHeight) {
+    return ImageBox(
+      opaque: event.imageFiles[index],
+      selected: _selectedItems.containsKey(event.imageFiles[index].hashCode),
+      file: event.imageFiles[index].file,
+      onLongPress: () {
+        _longPressedImage(event.imageFiles[index].file);
+      },
+      onPress: (selected) {
+        _pressedImage(selected, event.imageFiles[index]);
+      },
+      minHeight: minHeight,
     );
   }
 
   Widget _buildImagesUponLoad(BuildContext context, ImagesLoaded event) {
     print("fetched a total of ${event.imageFiles.length} images");
+
+    _shownImageBoxes.clear();
 
     return Row(children: [
       Expanded(
