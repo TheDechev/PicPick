@@ -53,15 +53,15 @@ class _GalleryScreenState extends State<GalleryScreen> {
           elevation: 10,
           actions: [
             PopupMenuButton(
+              shape: kRoundedShape,
+              color: Colors.pinkAccent,
+              elevation: 8,
               onSelected: (item) => _selectedMenuItem(context, item),
               itemBuilder: (context) => [
-                PopupMenuItem<DotsMenuItem>(
-                    value: DotsMenuItem.ClearAll, child: Text("Clear All")),
-                PopupMenuItem<DotsMenuItem>(
-                    value: DotsMenuItem.GridSize, child: Text("Change grid")),
-                PopupMenuItem<DotsMenuItem>(
-                    value: DotsMenuItem.ReportProblem,
-                    child: Text("Report a problem")),
+                customPopupMenuItem(DotsMenuItem.ClearAll, "Clear All"),
+                customPopupMenuItem(DotsMenuItem.GridSize, "Change grid"),
+                customPopupMenuItem(
+                    DotsMenuItem.ReportProblem, "Report a problem"),
               ],
             ),
           ],
@@ -128,6 +128,16 @@ class _GalleryScreenState extends State<GalleryScreen> {
               }),
             ),
           ],
+        ));
+  }
+
+  PopupMenuItem<DotsMenuItem> customPopupMenuItem(
+      DotsMenuItem item, String text) {
+    return PopupMenuItem<DotsMenuItem>(
+        value: item,
+        child: Text(
+          text,
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ));
   }
 
@@ -224,6 +234,13 @@ class _GalleryScreenState extends State<GalleryScreen> {
     );
   }
 
+  void _reloadPage({int numImages = kDefaultNumImagesToShow}) {
+    _numImagesToShow = numImages;
+    _imagesBloc.add(ReloadImages(_numImagesToShow));
+    _counterBloc.add(CounterEvent.reset);
+    _selectedItems.clear();
+  }
+
   void _selectedMenuItem(BuildContext context, DotsMenuItem item) {
     switch (item) {
       case DotsMenuItem.ClearAll:
@@ -232,6 +249,24 @@ class _GalleryScreenState extends State<GalleryScreen> {
         _counterBloc.add(CounterEvent.reset);
         break;
       case DotsMenuItem.GridSize:
+        showDialog(
+            context: context,
+            builder: (context) {
+              return SimpleDialog(
+                elevation: 8,
+                backgroundColor: Colors.pinkAccent,
+                shape: kRoundedShape,
+                title: Center(
+                    child: Text("Select Grid Size",
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.w600))),
+                children: [
+                  customDialogOption(context, 2),
+                  customDialogOption(context, 4),
+                  customDialogOption(context, 8)
+                ],
+              );
+            });
         print("grid size selected");
         break;
       case DotsMenuItem.ReportProblem:
@@ -241,5 +276,20 @@ class _GalleryScreenState extends State<GalleryScreen> {
         print("unknown value");
         break;
     }
+  }
+
+  SimpleDialogOption customDialogOption(BuildContext context, int num) {
+    return SimpleDialogOption(
+      child: Center(
+        child: Text(
+          num.toString(),
+          style: TextStyle(color: Colors.white, fontSize: 16),
+        ),
+      ),
+      onPressed: () {
+        _reloadPage(numImages: num);
+        Navigator.pop(context);
+      },
+    );
   }
 }
