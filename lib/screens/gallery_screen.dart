@@ -264,9 +264,10 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 backgroundColor: Colors.pinkAccent,
                 shape: kRoundedShape,
                 title: Center(
-                    child: Text("Select Grid Size",
-                        style: TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.w600))),
+                    child: Text(
+                  "Select Grid Size",
+                  style: kHeaderTextStyle,
+                )),
                 children: [
                   customDialogOption(context, 2),
                   customDialogOption(context, 4),
