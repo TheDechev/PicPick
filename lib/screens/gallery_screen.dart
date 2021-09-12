@@ -16,6 +16,7 @@ import 'image_screen.dart';
 
 enum DotsMenuItem { ClearAll, GridSize, ReportProblem }
 const kGridSizeKey = 'grid_size';
+const kDummyValue = -1;
 
 class GalleryScreen extends StatefulWidget {
   static const RouteKey = '/gallery_screen';
@@ -137,7 +138,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 child: BlocConsumer<ImagesBloc, ImagesState>(
                   listener: (context, state) {
                     if (state is ImagesDeleted) {
-                      _imagesBloc.add(ReloadImages(_numImagesToShow));
+                      _reloadPage();
                     }
                   },
                   builder: (context, state) {
@@ -160,8 +161,6 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 List<ImageFile> imageFiles = [];
                 _selectedItems.forEach((k, v) => imageFiles.add(v));
                 _imagesBloc.add(DeleteImages(imageFiles));
-                _counterBloc.add(CounterEvent.reset);
-                _selectedItems.clear();
               },
               icon: BlocBuilder<CounterBloc, int>(builder: (context, state) {
                 return Badge(
@@ -299,11 +298,11 @@ class _GalleryScreenState extends State<GalleryScreen> {
     );
   }
 
-  void _reloadPage({int numImages = kDefaultNumImagesToShow}) {
-    if (numImages != kDefaultNumImagesToShow) {
+  void _reloadPage({int numImages = kDummyValue}) {
+    if (numImages != kDummyValue) {
       _sharedPref.setInt(kGridSizeKey, numImages);
+      _numImagesToShow = numImages;
     }
-    _numImagesToShow = numImages;
     _imagesBloc.add(ReloadImages(_numImagesToShow));
     _counterBloc.add(CounterEvent.reset);
     _selectedItems.clear();
@@ -312,9 +311,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
   void _selectedMenuItem(BuildContext context, DotsMenuItem item) {
     switch (item) {
       case DotsMenuItem.ClearAll:
-        _selectedItems.clear();
-        _imagesBloc.add(ReloadImages(_numImagesToShow));
-        _counterBloc.add(CounterEvent.reset);
+        _reloadPage();
         break;
       case DotsMenuItem.GridSize:
         showDialog(
@@ -330,9 +327,9 @@ class _GalleryScreenState extends State<GalleryScreen> {
                   style: kHeaderTextStyle,
                 )),
                 children: [
-                  customDialogOption(context, 2),
-                  customDialogOption(context, 4),
-                  customDialogOption(context, 8)
+                  customGridDialogOption(context, 2),
+                  customGridDialogOption(context, 4),
+                  customGridDialogOption(context, 8)
                 ],
               );
             });
@@ -347,7 +344,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
     }
   }
 
-  SimpleDialogOption customDialogOption(BuildContext context, int num) {
+  SimpleDialogOption customGridDialogOption(BuildContext context, int num) {
     return SimpleDialogOption(
       child: Center(
         child: Text(
