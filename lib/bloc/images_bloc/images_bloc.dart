@@ -52,8 +52,9 @@ class ImagesBloc extends Bloc<ImagesEvent, ImagesState> {
   }
 
   Stream<ImagesState> _mapReloadImagesToState(ReloadImages event) async* {
-    await _photoRepository.reset();
-    yield* _fetchImages(event.numImages);
+    yield ImagesLoading();
+    final images = _photoRepository.reloadImages(event.numImages);
+    yield ImagesLoaded(images);
   }
 
   Stream<ImagesState> _mapNextImagesToState() async* {

@@ -298,14 +298,24 @@ class _GalleryScreenState extends State<GalleryScreen> {
     );
   }
 
-  void _reloadPage({int numImages = kDummyValue}) {
+  void _reloadPage(
+      {int numImages = kDummyValue,
+      bool resetSelected = true,
+      bool resetCounter = true}) {
     if (numImages != kDummyValue) {
       _sharedPref.setInt(kGridSizeKey, numImages);
       _numImagesToShow = numImages;
     }
+
     _imagesBloc.add(ReloadImages(_numImagesToShow));
-    _counterBloc.add(CounterEvent.reset);
-    _selectedItems.clear();
+
+    if (resetCounter) {
+      _counterBloc.add(CounterEvent.reset);
+    }
+
+    if (resetSelected) {
+      _selectedItems.clear();
+    }
   }
 
   void _selectedMenuItem(BuildContext context, DotsMenuItem item) {
@@ -353,7 +363,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
         ),
       ),
       onPressed: () {
-        _reloadPage(numImages: num);
+        _reloadPage(numImages: num, resetCounter: false, resetSelected: false);
         Navigator.pop(context);
       },
     );

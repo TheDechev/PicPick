@@ -36,11 +36,23 @@ class ImageBox extends StatefulWidget {
 
 class _ImageBoxState extends State<ImageBox> {
   bool _selected = false;
-  final double _minHeight;
+  double _minHeight;
 
   _ImageBoxState(this._selected, this._minHeight);
 
   bool get selected => _selected;
+
+  @override
+  void didUpdateWidget(ImageBox oldWidget) {
+    print(
+        "oldWidget.minHeight = ${oldWidget.minHeight}, widget.minHeight=${widget.minHeight}");
+    if (oldWidget.minHeight != widget.minHeight) {
+      setState(() {
+        _minHeight = widget.minHeight;
+      });
+    }
+    super.didUpdateWidget(oldWidget);
+  }
 
   set selected(bool value) {
     setState(() {

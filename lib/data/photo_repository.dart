@@ -11,7 +11,8 @@ abstract class PhotoRepository {
   Future<List<ImageFile>> getNextPhotoImages();
   List<ImageFile> getPreviousPhotoImages();
   Future<void> reset();
-  Future<void> deleteImages(List<ImageFile> imageFiles);
+  Future<void> deleteImages(List<ImageFile> imagesFilesToDelete);
+  List<ImageFile> reloadImages(int numImages);
 }
 
 class PhotoGalleryRepository implements PhotoRepository {
@@ -160,9 +161,11 @@ class PhotoGalleryRepository implements PhotoRepository {
           break;
         } else {
           if (_moreImagesLeftInRange()) {
+            _lastStartFilesIndex = _lastEndFilesIndex + 1;
+            _lastEndFilesIndex = _imageFiles.length - 1;
             print("returning last images");
             return _imageFiles.sublist(
-                _lastEndFilesIndex + 1, _imageFiles.length);
+                _lastStartFilesIndex, _lastEndFilesIndex + 1);
           }
           print("reached end of isAll/last album, returning the same images");
           return _imageFiles.sublist(
@@ -181,11 +184,11 @@ class PhotoGalleryRepository implements PhotoRepository {
       index = _imageFiles.length - 1;
     }
 
-    List<ImageFile> resList =
-        _imageFiles.sublist(_lastEndFilesIndex + 1, index + 1);
-
     _lastStartFilesIndex = _lastEndFilesIndex + 1;
     _lastEndFilesIndex = index;
+
+    List<ImageFile> resList =
+        _imageFiles.sublist(_lastStartFilesIndex, _lastEndFilesIndex + 1);
 
     return resList;
   }
@@ -208,15 +211,40 @@ class PhotoGalleryRepository implements PhotoRepository {
   }
 
   @override
-  Future<void> deleteImages(List<ImageFile> imageFiles) async {
+  Future<void> deleteImages(List<ImageFile> imagesFilesToDelete) async {
     List<String> imageIds = [];
 
-    for (int i = 0; i < imageFiles.length; i++) {
-      imageIds.add(imageFiles[i].id);
+    for (int i = 0; i < imagesFilesToDelete.length; i++) {
+      imageIds.add(imagesFilesToDelete[i].id);
     }
 
-    await PhotoManager.editor.deleteWithIds(imageIds);
+    int numImagesBeforeStart = 0;
+    Set imageIdsSet = imageIds.toSet();
+    for (int i = 0; i <= _lastStartFilesIndex; i++) {
+      if (imageIdsSet.contains(_imageFiles[i].id)) {
+        numImagesBeforeStart++;
+      }
+    }
 
-    reset();
+    _imageFiles.removeWhere((element) => imageIdsSet.contains(element.id));
+
+    _lastStartFilesIndex -= numImagesBeforeStart;
+    _lastEndFilesIndex = _lastStartFilesIndex + _numImages - 1;
+
+    await PhotoManager.editor.deleteWithIds(imageIds);
+  }
+
+  @override
+  List<ImageFile> reloadImages(int numImages) {
+    _numImages = numImages;
+    _lastEndFilesIndex = _lastStartFilesIndex + _numImages - 1;
+
+    if (_lastEndFilesIndex + 1 > _imageFiles.length) {
+      print(
+          "requested numImages is lower than the actual number of images, returning actual number");
+      _lastEndFilesIndex = _imageFiles.length - 1;
+    }
+
+    return _imageFiles.sublist(_lastStartFilesIndex, _lastEndFilesIndex + 1);
   }
 }
