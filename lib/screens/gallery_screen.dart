@@ -101,16 +101,27 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 if (_isSwipeDown(details)) {
                   print(
                       "swipe down, _shownImageFiles.length=${_shownImageFiles.length}");
+                  // _selectedItems.removeWhere((key, value) => _shownImageFiles.contains(value));
                   for (var i = 0; i < _shownImageFiles.length; i++) {
-                    _selectedItems.remove(_shownImageFiles[i].hashCode);
+                    if (_selectedItems
+                        .containsKey(_shownImageFiles[i].hashCode)) {
+                      _selectedItems.remove(_shownImageFiles[i].hashCode);
+                      _counterBloc.add(CounterEvent.decrement);
+                    }
                   }
+                  _imagesBloc.add(ReloadImages(_numImagesToShow));
                 } else if (_isSwipeUp(details)) {
                   print(
                       "swipe up, _shownImageFiles.length=${_shownImageFiles.length}");
                   for (var i = 0; i < _shownImageFiles.length; i++) {
-                    _selectedItems[_shownImageFiles[i].hashCode] =
-                        _shownImageFiles[i];
+                    if (!_selectedItems
+                        .containsKey(_shownImageFiles[i].hashCode)) {
+                      _selectedItems[_shownImageFiles[i].hashCode] =
+                          _shownImageFiles[i];
+                      _counterBloc.add(CounterEvent.increment);
+                    }
                   }
+                  _imagesBloc.add(ReloadImages(_numImagesToShow));
                 }
               },
               onHorizontalDragEnd: (DragEndDetails details) {
@@ -201,8 +212,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
   }
 
   Widget _buildHeroImageBox(int index, BuildContext context,
-      ImageFile imageFile, int totalImageFiles) {
-    final bool isIndexInRange = index < totalImageFiles;
+      ImageFile imageFile, bool isIndexInRange) {
     final double minHeight = (MediaQuery.of(context).size.height * 0.8) /
         (_numImagesToShow / 2) /
         1.1;
@@ -253,8 +263,9 @@ class _GalleryScreenState extends State<GalleryScreen> {
             shrinkWrap: true,
             itemCount: _numImagesToShow ~/ 2,
             itemBuilder: (context, index) {
-              return _buildHeroImageBox(
-                  index, context, imageFiles[index], imageFiles.length);
+              final bool isIndexInRange = index < imageFiles.length;
+              return _buildHeroImageBox(index, context,
+                  isIndexInRange ? imageFiles[index] : null, isIndexInRange);
             },
           ),
         ),
@@ -265,8 +276,9 @@ class _GalleryScreenState extends State<GalleryScreen> {
             itemCount: _numImagesToShow ~/ 2,
             itemBuilder: (context, index) {
               index = _numImagesToShow ~/ 2 + index;
-              return _buildHeroImageBox(
-                  index, context, imageFiles[index], imageFiles.length);
+              final bool isIndexInRange = index < imageFiles.length;
+              return _buildHeroImageBox(index, context,
+                  isIndexInRange ? imageFiles[index] : null, isIndexInRange);
             },
           ),
         ),

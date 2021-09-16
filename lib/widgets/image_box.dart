@@ -10,7 +10,6 @@ class ImageBox extends StatefulWidget {
   final Function onLongPress;
   final bool selected;
   final double minHeight;
-  _ImageBoxState instance;
   final Object opaque;
 
   ImageBox(
@@ -22,16 +21,7 @@ class ImageBox extends StatefulWidget {
       this.opaque});
 
   @override
-  _ImageBoxState createState() {
-    instance = _ImageBoxState(selected, minHeight);
-    return instance;
-  }
-
-  void setSelectValue(bool value) {
-    instance.selected = value;
-  }
-
-  bool getSelectedValue() => instance.selected;
+  _ImageBoxState createState() => _ImageBoxState(selected, minHeight);
 }
 
 class _ImageBoxState extends State<ImageBox> {
@@ -49,6 +39,10 @@ class _ImageBoxState extends State<ImageBox> {
     if (oldWidget.minHeight != widget.minHeight) {
       setState(() {
         _minHeight = widget.minHeight;
+      });
+    } else if (oldWidget.selected != widget.selected) {
+      setState(() {
+        _selected = widget.selected;
       });
     }
     super.didUpdateWidget(oldWidget);
