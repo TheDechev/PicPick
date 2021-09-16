@@ -31,7 +31,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
   ImagesBloc _imagesBloc;
   int _numImagesToShow;
   SharedPreferences _sharedPref;
-  List<ImageBox> _shownImageBoxes = [];
+  List<ImageFile> _shownImageFiles = [];
 
   @override
   void initState() {
@@ -100,29 +100,16 @@ class _GalleryScreenState extends State<GalleryScreen> {
               onVerticalDragEnd: (DragEndDetails details) {
                 if (_isSwipeDown(details)) {
                   print(
-                      "swipe down, _shownImageBoxes.length=${_shownImageBoxes.length}");
-                  for (var i = 0; i < _shownImageBoxes.length; i++) {
-                    ImageFile imageFile =
-                        _shownImageBoxes[i].opaque as ImageFile;
-                    if (_shownImageBoxes[i].getSelectedValue() &&
-                        imageFile != null) {
-                      _shownImageBoxes[i].setSelectValue(false);
-                      _counterBloc.add(CounterEvent.decrement);
-                      _selectedItems.remove(imageFile.hashCode);
-                    }
+                      "swipe down, _shownImageFiles.length=${_shownImageFiles.length}");
+                  for (var i = 0; i < _shownImageFiles.length; i++) {
+                    _selectedItems.remove(_shownImageFiles[i].hashCode);
                   }
                 } else if (_isSwipeUp(details)) {
                   print(
-                      "swipe up, _shownImageBoxes.length=${_shownImageBoxes.length}");
-                  for (var i = 0; i < _shownImageBoxes.length; i++) {
-                    ImageFile imageFile =
-                        _shownImageBoxes[i].opaque as ImageFile;
-                    if (!_shownImageBoxes[i].getSelectedValue() &&
-                        imageFile != null) {
-                      _shownImageBoxes[i].setSelectValue(true);
-                      _counterBloc.add(CounterEvent.increment);
-                      _selectedItems[imageFile.hashCode] = imageFile;
-                    }
+                      "swipe up, _shownImageFiles.length=${_shownImageFiles.length}");
+                  for (var i = 0; i < _shownImageFiles.length; i++) {
+                    _selectedItems[_shownImageFiles[i].hashCode] =
+                        _shownImageFiles[i];
                   }
                 }
               },
@@ -213,30 +200,26 @@ class _GalleryScreenState extends State<GalleryScreen> {
     }
   }
 
-  Widget _buildHeroImageBox(
-      int index, BuildContext context, ImagesLoaded event) {
-    final bool isIndexInRange = index < event.imageFiles.length;
+  Widget _buildHeroImageBox(int index, BuildContext context,
+      ImageFile imageFile, int totalImageFiles) {
+    final bool isIndexInRange = index < totalImageFiles;
     final double minHeight = (MediaQuery.of(context).size.height * 0.8) /
         (_numImagesToShow / 2) /
         1.1;
     final ImageBox imageBox = isIndexInRange
-        ? buildImageBox(event, index, context, minHeight)
+        ? buildImageBox(imageFile, context, minHeight)
         : ImageBox(
             file: null,
             onPress: null,
             minHeight: minHeight,
           );
 
-    if (imageBox.file != null) {
-      _shownImageBoxes.add(imageBox);
-    }
-
     return Hero(
       key: isIndexInRange
-          ? ValueKey(event.imageFiles[index].hashCode)
+          ? ValueKey(imageFile.hashCode)
           : ValueKey("image$index"),
       tag: isIndexInRange
-          ? kImageHeroTag + event.imageFiles[index].hashCode.toString()
+          ? kImageHeroTag + imageFile.hashCode.toString()
           : kImageHeroTag + index.toString(),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
@@ -246,49 +229,57 @@ class _GalleryScreenState extends State<GalleryScreen> {
   }
 
   ImageBox buildImageBox(
-      ImagesLoaded event, int index, BuildContext context, double minHeight) {
+      ImageFile imageFile, BuildContext context, double minHeight) {
     return ImageBox(
-      opaque: event.imageFiles[index],
-      selected: _selectedItems.containsKey(event.imageFiles[index].hashCode),
-      file: event.imageFiles[index].file,
+      opaque: imageFile,
+      selected: _selectedItems.containsKey(imageFile.hashCode),
+      file: imageFile.file,
       onLongPress: () {
-        _longPressedImage(event.imageFiles[index].file);
+        _longPressedImage(imageFile.file);
       },
       onPress: (selected) {
-        _pressedImage(selected, event.imageFiles[index]);
+        _pressedImage(selected, imageFile);
       },
       minHeight: minHeight,
+    );
+  }
+
+  Widget _buildImages(BuildContext context, List<ImageFile> imageFiles) {
+    return Row(
+      children: [
+        Expanded(
+          child: ListView.builder(
+            physics: NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: _numImagesToShow ~/ 2,
+            itemBuilder: (context, index) {
+              return _buildHeroImageBox(
+                  index, context, imageFiles[index], imageFiles.length);
+            },
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            physics: NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: _numImagesToShow ~/ 2,
+            itemBuilder: (context, index) {
+              index = _numImagesToShow ~/ 2 + index;
+              return _buildHeroImageBox(
+                  index, context, imageFiles[index], imageFiles.length);
+            },
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildImagesUponLoad(BuildContext context, ImagesLoaded event) {
     print("fetched a total of ${event.imageFiles.length} images");
 
-    _shownImageBoxes.clear();
+    _shownImageFiles = event.imageFiles;
 
-    return Row(children: [
-      Expanded(
-        child: ListView.builder(
-          physics: NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
-          itemCount: _numImagesToShow ~/ 2,
-          itemBuilder: (context, index) {
-            return _buildHeroImageBox(index, context, event);
-          },
-        ),
-      ),
-      Expanded(
-        child: ListView.builder(
-          physics: NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
-          itemCount: _numImagesToShow ~/ 2,
-          itemBuilder: (context, index) {
-            index = _numImagesToShow ~/ 2 + index;
-            return _buildHeroImageBox(index, context, event);
-          },
-        ),
-      ),
-    ]);
+    return _buildImages(context, event.imageFiles);
   }
 
   Widget _buildLoadIndicator() {

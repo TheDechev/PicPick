@@ -19,8 +19,8 @@ class WelcomeScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  CustomTitleText("Welcome to"),
-                  Hero(tag: kPicPickHeroTag, child: CustomTitleText("PicPick!"))
+                  customTitleText("Welcome to"),
+                  Hero(tag: kPicPickHeroTag, child: customTitleText("PicPick!"))
                 ],
               ),
             ),
@@ -58,7 +58,7 @@ class WelcomeScreen extends StatelessWidget {
     );
   }
 
-  Text CustomTitleText(String text) {
+  Text customTitleText(String text) {
     return Text(
       text,
       style: TextStyle(

@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
-import 'package:photo_manager/photo_manager.dart';
 import 'package:picpick/data/models/image_file.dart';
 import 'package:picpick/data/photo_repository.dart';
 
