@@ -5,6 +5,8 @@ import 'package:photo_manager/photo_manager.dart';
 
 import 'models/image_file.dart';
 
+const kDefaultNumImagesToFetch = 50;
+
 abstract class PhotoRepository {
   Future<List<ImageFile>> fetchInitialPhotoImages(int numImages);
   Future<List<ImageFile>> getNextPhotoImages();
@@ -59,9 +61,12 @@ class PhotoGalleryRepository implements PhotoRepository {
   Future<void> _fetchMoreFilesFromAlbum() async {
     while (_lastAlbum.assetCount > _lastEndAssetRange && !_enoughImageFiles()) {
       _lastStartAssetRange = _lastEndAssetRange;
-      _lastEndAssetRange = _lastEndAssetRange + _numImages;
+      _lastEndAssetRange = _lastEndAssetRange + kDefaultNumImagesToFetch;
       List<AssetEntity> imageAssets = await _lastAlbum.getAssetListRange(
           start: _lastStartAssetRange, end: _lastEndAssetRange);
+      if (imageAssets.length < _lastEndAssetRange - _lastStartAssetRange) {
+        _lastEndAssetRange = _lastStartAssetRange + imageAssets.length;
+      }
       _imageFiles =
           _imageFiles + await _imageAssetsToImageFileList(imageAssets);
     }

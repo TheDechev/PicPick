@@ -207,7 +207,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
     } else {
       print("image unselected");
       _counterBloc.add(CounterEvent.decrement);
-      _selectedItems.remove(hashCode);
+      _selectedItems.remove(imageFile.hashCode);
     }
   }
 
