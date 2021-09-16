@@ -40,7 +40,7 @@ class _ImageBoxState extends State<ImageBox> {
       setState(() {
         _minHeight = widget.minHeight;
       });
-    } else if (oldWidget.selected != widget.selected) {
+    } else if (_selected != widget.selected) {
       setState(() {
         _selected = widget.selected;
       });
