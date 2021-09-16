@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:picpick/bloc/counter_bloc/counter_bloc.dart';
 import 'package:picpick/bloc/images_bloc/images_bloc.dart';
@@ -349,6 +350,9 @@ class _GalleryScreenState extends State<GalleryScreen> {
         print("grid size selected");
         break;
       case DotsMenuItem.ReportProblem:
+        _sendAReportEmail().then((value) => () {
+              print("email sent");
+            });
         print("report a problem selected");
         break;
       default:
@@ -377,5 +381,20 @@ class _GalleryScreenState extends State<GalleryScreen> {
     _numImagesToShow =
         _sharedPref.getInt(kGridSizeKey) ?? kDefaultNumImagesToShow;
     _imagesBloc.add(GetImages(_numImagesToShow));
+  }
+
+  Future<void> _sendAReportEmail() async {
+    final Email email = Email(
+      body: 'This is a test report from the PicPick application.',
+      subject: 'PicPick report',
+      recipients: ['enter email here'],
+      isHTML: false,
+    );
+
+    try {
+      await FlutterEmailSender.send(email);
+    } catch (e) {
+      print("cannot send an email, exception=${e.toString()}");
+    }
   }
 }
