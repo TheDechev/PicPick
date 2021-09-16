@@ -232,7 +232,9 @@ class PhotoGalleryRepository implements PhotoRepository {
 
     _imageFiles.removeWhere((element) => imageIdsSet.contains(element.id));
 
-    _lastStartFilesIndex -= numImagesBeforeStart;
+    _lastStartFilesIndex =
+        ((_lastStartFilesIndex - numImagesBeforeStart) ~/ _numImages) *
+            _numImages;
     _lastEndFilesIndex = _lastStartFilesIndex + _numImages - 1;
 
     await PhotoManager.editor.deleteWithIds(imageIds);
