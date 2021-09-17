@@ -382,9 +382,8 @@ class _GalleryScreenState extends State<GalleryScreen> {
     _numImagesToShow =
         _sharedPref.getInt(kGridSizeKey) ?? kDefaultNumImagesToShow;
     final thumbWidth = (MediaQuery.of(context).size.width * 0.95) / 2 / 1.1;
-    var thumbHeight = (MediaQuery.of(context).size.height * 0.8) /
-        (_numImagesToShow ~/ 2) /
-        1.1;
+    /* In worst case scenario (grid=2) the height should be valid*/
+    var thumbHeight = (MediaQuery.of(context).size.height * 0.8) / 1.1;
     _imagesBloc.add(
         GetImages(_numImagesToShow, thumbWidth.toInt(), thumbHeight.toInt()));
   }
