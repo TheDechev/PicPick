@@ -1,13 +1,18 @@
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 
 class ImageFile extends Equatable {
   final String id;
-  final File file;
+  final Uint8List fullImageBytes;
+  final Uint8List thumbnailBytes;
 
-  ImageFile(this.id, this.file);
+  ImageFile(
+      {@required this.id,
+      @required this.thumbnailBytes,
+      @required this.fullImageBytes});
 
   @override
-  List<Object> get props => [id, file];
+  List<Object> get props => [id, fullImageBytes, thumbnailBytes];
 }

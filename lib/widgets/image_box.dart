@@ -1,11 +1,10 @@
-import 'dart:ffi';
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:picpick/utils/constants.dart';
 
 class ImageBox extends StatefulWidget {
-  final File file;
+  final Uint8List bytes;
   final Function onPress;
   final Function onLongPress;
   final bool selected;
@@ -13,7 +12,7 @@ class ImageBox extends StatefulWidget {
   final Object opaque;
 
   ImageBox(
-      {@required this.file,
+      {@required this.bytes,
       @required this.minHeight,
       this.onPress,
       this.selected = false,
@@ -36,7 +35,7 @@ class _ImageBoxState extends State<ImageBox> {
   void didUpdateWidget(ImageBox oldWidget) {
     print(
         "oldWidget.minHeight = ${oldWidget.minHeight}, widget.minHeight=${widget.minHeight}");
-    if (oldWidget.minHeight != widget.minHeight) {
+    if (_minHeight != widget.minHeight) {
       setState(() {
         _minHeight = widget.minHeight;
       });
@@ -74,7 +73,9 @@ class _ImageBoxState extends State<ImageBox> {
         alignment: Alignment.bottomRight,
         children: [
           Container(
-            constraints: BoxConstraints(minHeight: _minHeight),
+            constraints: BoxConstraints(
+              minHeight: _minHeight,
+            ),
             decoration: BoxDecoration(
               boxShadow: [
                 BoxShadow(
@@ -85,9 +86,9 @@ class _ImageBoxState extends State<ImageBox> {
                 ),
               ],
               image: DecorationImage(
-                image: (widget.file == null)
+                image: (widget.bytes == null)
                     ? AssetImage(kNoImageAsset)
-                    : FileImage(widget.file),
+                    : MemoryImage(widget.bytes),
                 fit: BoxFit.cover,
               ),
               borderRadius: BorderRadius.all(

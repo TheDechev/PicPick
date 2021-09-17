@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -8,7 +9,8 @@ import 'models/image_file.dart';
 const kDefaultNumImagesToFetch = 50;
 
 abstract class PhotoRepository {
-  Future<List<ImageFile>> fetchInitialPhotoImages(int numImages);
+  Future<List<ImageFile>> fetchInitialPhotoImages(
+      int numImages, int thumbWidth, int thumbHeight);
   Future<List<ImageFile>> getNextPhotoImages();
   List<ImageFile> getPreviousPhotoImages();
   Future<void> reset();
@@ -22,7 +24,10 @@ class PhotoGalleryRepository implements PhotoRepository {
       _lastStartFilesIndex = 0,
       _lastEndFilesIndex = 0,
       _lastStartAssetRange = 0,
-      _lastEndAssetRange = 0;
+      _lastEndAssetRange = 0,
+      _thumbWidth = 0,
+      _thumbHeight = 0;
+
   AssetPathEntity _lastAlbum;
   List<AssetPathEntity> _assetsAlbumList = [];
   List<ImageFile> _imageFiles = [];
@@ -47,8 +52,13 @@ class PhotoGalleryRepository implements PhotoRepository {
 
     List<ImageFile> imageFiles = [];
     for (int i = 0; i < imageAssets.length; i++) {
-      File file = await imageAssets[i].file;
-      imageFiles.add(ImageFile(imageAssets[i].id, file));
+      Uint8List fullImageBytes = await imageAssets[i].originBytes;
+      Uint8List thumbnailBytes =
+          await imageAssets[i].thumbDataWithSize(_thumbWidth, _thumbHeight);
+      imageFiles.add(ImageFile(
+          id: imageAssets[i].id,
+          thumbnailBytes: thumbnailBytes,
+          fullImageBytes: fullImageBytes));
     }
 
     if (imageFiles.isEmpty) {
@@ -73,7 +83,8 @@ class PhotoGalleryRepository implements PhotoRepository {
   }
 
   @override
-  Future<List<ImageFile>> fetchInitialPhotoImages(int numImages) async {
+  Future<List<ImageFile>> fetchInitialPhotoImages(
+      int numImages, int thumbWidth, int thumbHeight) async {
     if (!await Permission.storage.isGranted) {
       var result = await PhotoManager.requestPermissionExtend();
       if (result.isAuth) {
@@ -84,6 +95,8 @@ class PhotoGalleryRepository implements PhotoRepository {
     }
 
     _numImages = numImages;
+    _thumbWidth = thumbWidth;
+    _thumbHeight = thumbHeight;
 
     if (_assetsAlbumList.isEmpty) {
       await PhotoManager.clearFileCache();

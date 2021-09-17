@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:picpick/data/models/image_args.dart';
 
@@ -18,7 +17,7 @@ class ImageScreen extends StatelessWidget {
         body: Center(
           child: Hero(
             tag: args.heroTag,
-            child: Image.file(args.imageFile),
+            child: Image.memory(args.imageBytes),
           ),
         ),
       ),

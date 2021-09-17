@@ -1,10 +1,11 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
 class ImageArgs {
-  final File imageFile;
+  final Uint8List imageBytes;
   final String heroTag;
 
-  ImageArgs({@required this.imageFile, this.heroTag});
+  ImageArgs({@required this.imageBytes, this.heroTag});
 }

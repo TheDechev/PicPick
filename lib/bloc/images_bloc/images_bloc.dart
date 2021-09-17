@@ -38,15 +38,17 @@ class ImagesBloc extends Bloc<ImagesEvent, ImagesState> {
     }
   }
 
-  Stream<ImagesState> _fetchImages(int numImages) async* {
+  Stream<ImagesState> _fetchImages(
+      int numImages, int thumbWidth, int thumbHeight) async* {
     yield ImagesLoading();
-    final images = await _photoRepository.fetchInitialPhotoImages(numImages);
+    final images = await _photoRepository.fetchInitialPhotoImages(
+        numImages, thumbWidth, thumbHeight);
     yield ImagesLoaded(images);
   }
 
   Stream<ImagesState> _mapGetImagesToState(GetImages event) async* {
     await _photoRepository.reset();
-    yield* _fetchImages(event.numImages);
+    yield* _fetchImages(event.numImages, event.thumbWidth, event.thumbHeight);
   }
 
   Stream<ImagesState> _mapReloadImagesToState(ReloadImages event) async* {

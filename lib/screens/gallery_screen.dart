@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
@@ -193,11 +193,11 @@ class _GalleryScreenState extends State<GalleryScreen> {
         ));
   }
 
-  void _longPressedImage(File imageFile) {
+  void _longPressedImage(Uint8List imageBytes, int hashCode) {
     Navigator.pushNamed(context, ImageScreen.RouteKey,
         arguments: ImageArgs(
-            imageFile: imageFile,
-            heroTag: kImageHeroTag + imageFile.hashCode.toString()));
+            imageBytes: imageBytes,
+            heroTag: kImageHeroTag + hashCode.toString()));
   }
 
   void _pressedImage(bool selected, ImageFile imageFile) {
@@ -220,15 +220,12 @@ class _GalleryScreenState extends State<GalleryScreen> {
     final ImageBox imageBox = isIndexInRange
         ? buildImageBox(imageFile, context, minHeight)
         : ImageBox(
-            file: null,
+            bytes: null,
             onPress: null,
             minHeight: minHeight,
           );
 
     return Hero(
-      key: isIndexInRange
-          ? ValueKey(imageFile.hashCode)
-          : ValueKey("image$index"),
       tag: isIndexInRange
           ? kImageHeroTag + imageFile.hashCode.toString()
           : kImageHeroTag + index.toString(),
@@ -244,9 +241,9 @@ class _GalleryScreenState extends State<GalleryScreen> {
     return ImageBox(
       opaque: imageFile,
       selected: _selectedItems.containsKey(imageFile.hashCode),
-      file: imageFile.file,
+      bytes: imageFile.thumbnailBytes,
       onLongPress: () {
-        _longPressedImage(imageFile.file);
+        _longPressedImage(imageFile.fullImageBytes, imageFile.hashCode);
       },
       onPress: (selected) {
         _pressedImage(selected, imageFile);
@@ -256,34 +253,38 @@ class _GalleryScreenState extends State<GalleryScreen> {
   }
 
   Widget _buildImages(BuildContext context, List<ImageFile> imageFiles) {
-    return Row(
-      children: [
-        Expanded(
-          child: ListView.builder(
-            physics: NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: _numImagesToShow ~/ 2,
-            itemBuilder: (context, index) {
-              final bool isIndexInRange = index < imageFiles.length;
-              return _buildHeroImageBox(index, context,
-                  isIndexInRange ? imageFiles[index] : null, isIndexInRange);
-            },
+    return AnimatedContainer(
+      duration: const Duration(seconds: 2),
+      curve: Curves.easeInQuad,
+      child: Row(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              physics: NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              itemCount: _numImagesToShow ~/ 2,
+              itemBuilder: (context, index) {
+                final bool isIndexInRange = index < imageFiles.length;
+                return _buildHeroImageBox(index, context,
+                    isIndexInRange ? imageFiles[index] : null, isIndexInRange);
+              },
+            ),
           ),
-        ),
-        Expanded(
-          child: ListView.builder(
-            physics: NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: _numImagesToShow ~/ 2,
-            itemBuilder: (context, index) {
-              index = _numImagesToShow ~/ 2 + index;
-              final bool isIndexInRange = index < imageFiles.length;
-              return _buildHeroImageBox(index, context,
-                  isIndexInRange ? imageFiles[index] : null, isIndexInRange);
-            },
+          Expanded(
+            child: ListView.builder(
+              physics: NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              itemCount: _numImagesToShow ~/ 2,
+              itemBuilder: (context, index) {
+                index = _numImagesToShow ~/ 2 + index;
+                final bool isIndexInRange = index < imageFiles.length;
+                return _buildHeroImageBox(index, context,
+                    isIndexInRange ? imageFiles[index] : null, isIndexInRange);
+              },
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -380,7 +381,12 @@ class _GalleryScreenState extends State<GalleryScreen> {
     _sharedPref = value;
     _numImagesToShow =
         _sharedPref.getInt(kGridSizeKey) ?? kDefaultNumImagesToShow;
-    _imagesBloc.add(GetImages(_numImagesToShow));
+    final thumbWidth = (MediaQuery.of(context).size.width * 0.95) / 2 / 1.1;
+    var thumbHeight = (MediaQuery.of(context).size.height * 0.8) /
+        (_numImagesToShow ~/ 2) /
+        1.1;
+    _imagesBloc.add(
+        GetImages(_numImagesToShow, thumbWidth.toInt(), thumbHeight.toInt()));
   }
 
   Future<void> _sendAReportEmail() async {
