@@ -256,6 +256,7 @@ class PhotoGalleryRepository implements PhotoRepository {
   @override
   List<ImageFile> reloadImages(int numImages) {
     _numImages = numImages;
+    _lastStartFilesIndex = (_lastStartFilesIndex ~/ _numImages) * numImages;
     _lastEndFilesIndex = _lastStartFilesIndex + _numImages - 1;
 
     if (_lastEndFilesIndex + 1 > _imageFiles.length) {
