@@ -5,13 +5,11 @@ abstract class ImagesEvent {}
 
 class GetImages extends ImagesEvent with EquatableMixin {
   final int numImages;
-  final int thumbWidth;
-  final int thumbHeight;
 
-  GetImages(this.numImages, this.thumbWidth, this.thumbHeight);
+  GetImages(this.numImages);
 
   @override
-  List<Object> get props => [numImages, thumbWidth, thumbHeight];
+  List<Object> get props => [numImages];
 }
 
 class ReloadImages extends ImagesEvent with EquatableMixin {

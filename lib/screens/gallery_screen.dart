@@ -260,6 +260,8 @@ class _GalleryScreenState extends State<GalleryScreen> {
         children: [
           Expanded(
             child: ListView.builder(
+              addAutomaticKeepAlives: false,
+              addRepaintBoundaries: false,
               physics: NeverScrollableScrollPhysics(),
               shrinkWrap: true,
               itemCount: _numImagesToShow ~/ 2,
@@ -272,6 +274,8 @@ class _GalleryScreenState extends State<GalleryScreen> {
           ),
           Expanded(
             child: ListView.builder(
+              addAutomaticKeepAlives: false,
+              addRepaintBoundaries: false,
               physics: NeverScrollableScrollPhysics(),
               shrinkWrap: true,
               itemCount: _numImagesToShow ~/ 2,
@@ -381,11 +385,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
     _sharedPref = value;
     _numImagesToShow =
         _sharedPref.getInt(kGridSizeKey) ?? kDefaultNumImagesToShow;
-    final thumbWidth = (MediaQuery.of(context).size.width * 0.95) / 2 / 1.1;
-    /* In worst case scenario (grid=2) the height should be valid*/
-    var thumbHeight = (MediaQuery.of(context).size.height * 0.8) / 1.1;
-    _imagesBloc.add(
-        GetImages(_numImagesToShow, thumbWidth.toInt(), thumbHeight.toInt()));
+    _imagesBloc.add(GetImages(_numImagesToShow));
   }
 
   Future<void> _sendAReportEmail() async {

@@ -33,13 +33,13 @@ class _ImageBoxState extends State<ImageBox> {
 
   @override
   void didUpdateWidget(ImageBox oldWidget) {
-    print(
-        "oldWidget.minHeight = ${oldWidget.minHeight}, widget.minHeight=${widget.minHeight}");
     if (_minHeight != widget.minHeight) {
+      print("force reload due to height property");
       setState(() {
         _minHeight = widget.minHeight;
       });
     } else if (_selected != widget.selected) {
+      print("force reload due to selected property");
       setState(() {
         _selected = widget.selected;
       });
@@ -96,10 +96,6 @@ class _ImageBoxState extends State<ImageBox> {
               ),
             ),
           ),
-          // Container(
-          //   constraints: BoxConstraints(minHeight: _minHeight),
-          //   color: Colors.pink[200].withOpacity(_selected ? 0.5 : 0),
-          // ),
           Icon(
             Icons.check_circle,
             size: _minHeight / 7,
